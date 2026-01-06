@@ -11,7 +11,13 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: `${location.origin}/auth/callback` },
+      options: {
+        data: {
+          first_name: firstName, // à lier à un nouvel input
+          last_name: lastName,   // à lier à un nouvel input
+          address: address       // à lier à un nouvel input
+        }
+      }
     });
     if (error) alert(error.message);
     else alert('Vérifie tes emails pour confirmer ton inscription !');
