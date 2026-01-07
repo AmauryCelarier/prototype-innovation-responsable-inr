@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useSearchParams } from 'next/navigation';
 import { calculateScores } from '@/hooks/useScoring';
+import DiagnosticRadar from '@/components/RadarChart';
+import Link from 'next/link';
 
 export default function DiagnosticPage() {
   const [questions, setQuestions] = useState<any[]>([]);
@@ -17,17 +19,16 @@ export default function DiagnosticPage() {
   }, []);
 
   async function fetchData() {
-    // 1. Charger les questions
     const { data: qData } = await supabase.from('questions').select('*').order('numero');
     if (qData) setQuestions(qData);
 
-    // 2. Charger les réponses existantes de l'utilisateur
     const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
+    if (user && projectId) {
       const { data: rData } = await supabase
         .from('responses')
         .select('question_id, score')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .eq('project_id', projectId);
       
       if (rData) {
         const map: Record<number, string> = {};
@@ -39,7 +40,7 @@ export default function DiagnosticPage() {
 
   const handleVote = async (questionId: number, score: string) => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return alert("Connectez-vous !");
+    if (!user || !projectId) return alert("Connectez-vous !");
 
     setResponses(prev => ({ ...prev, [questionId]: score }));
 
@@ -55,17 +56,66 @@ export default function DiagnosticPage() {
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* HEADER FIXE */}
       <div className="bg-white border-b sticky top-0 z-30 p-4">
-        <div className="max-w-[1600px] mx-auto flex justify-between items-center">
-          <h1 className="text-xl font-bold text-slate-800">Étape 1 : Diagnostic de Maturité</h1>
-          <div className="flex items-center gap-6">
-            <div className="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
-              Projet : {projectId ? "En cours" : "Non défini"}
+        <div className="max-w-[1600px] mx-auto grid grid-cols-3 items-center">
+          
+          {/* GAUCHE : VIDE (Pour centrer le milieu) */}
+          <div className="flex items-center gap-3">
+            <div className="bg-blue-600 text-white p-2 rounded-lg shadow-sm">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              </svg>
             </div>
+            <h1 className="text-xl font-black text-slate-800 tracking-tight uppercase">Étape 1</h1>
+          </div>
+
+          {/* MILIEU : TITRE + RETOUR DASHBOARD */}
+          <div className="flex flex-col items-center gap-1">
+            <h1 className="text-lg font-black text-slate-800 tracking-tight uppercase">
+              Diagnostic de Maturité
+            </h1>
+            <Link 
+              href="/dashboard/projects" 
+              className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-colors"
+            >
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              Retour aux projets
+            </Link>
+          </div>
+
+          {/* DROITE : BOUTON SUIVANT DYNAMIQUE */}
+          <div className="flex justify-end">
+            {(() => {
+              const dim6 = stats["6. Sensibilisation et acculturation NR"];
+              const isCritical = dim6?.totalWeight > 0 && (dim6.totalWeightedNote / dim6.totalWeight) < 3;
+              
+              const nextStepUrl = isCritical 
+                ? `/dashboard/etape-2?projectId=${projectId}` 
+                : `/dashboard/etape-3?projectId=${projectId}`;
+              
+              const nextStepLabel = isCritical ? "Étape 2" : "Étape 3";
+
+              return (
+                <Link 
+                  href={nextStepUrl}
+                  className="flex items-center gap-3 px-6 py-2.5 rounded-xl font-bold bg-blue-500 hover:bg-blue-600 text-white transition-all shadow-lg shadow-blue-100 group"
+                >
+                  <div className="flex flex-col items-end leading-none">
+                    <span className="text-[10px] uppercase opacity-80 tracking-tighter font-medium">Passer à l'</span>
+                    <span className="text-sm">{nextStepLabel}</span>
+                  </div>
+                  <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </Link>
+              );
+            })()}
           </div>
         </div>
       </div>
 
-      {/* BARRE DE PROGRESSION FIXE SOUS LE HEADER */}
+      {/* BARRE DE PROGRESSION */}
       <div className="sticky top-[69px] z-20 bg-white/80 backdrop-blur-md border-b p-3">
         <div className="max-w-[1600px] mx-auto flex items-center gap-4">
           <div className="flex-1 bg-slate-100 h-3 rounded-full overflow-hidden">
@@ -78,24 +128,23 @@ export default function DiagnosticPage() {
         </div>
       </div>
 
-      {/* CONTENU PRINCIPAL : GRILLE DEUX COLONNES */}
       <div className="max-w-[1600px] mx-auto px-6 mt-8">
         <div className="flex flex-col lg:flex-row gap-8 items-start">
           
-          {/* COLONNE GAUCHE : QUESTIONS (Scrollable) */}
+          {/* COLONNE GAUCHE : QUESTIONS */}
           <div className="flex-1 space-y-6 w-full lg:max-w-4xl">
             {questions.map((q) => (
               <div key={q.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
-                <div className="p-6">
+                <div className="p-6 text-slate-900">
                   <div className="flex items-center gap-2 mb-3">
                     <span className="bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded">
                       {q.dimension}
                     </span>
                     <span className="text-slate-300 text-xs font-medium">Question {q.numero}</span>
                   </div>
-                  <h3 className="text-lg font-semibold text-slate-900 mb-6 leading-tight">{q.intitule}</h3>
+                  <h3 className="text-lg font-semibold mb-6 leading-tight">{q.intitule}</h3>
 
-                  <div className="mt-4">
+                  <div className="mt-4 text-slate-900">
                     {q.reponse_0 ? (
                       <div className="grid grid-cols-1 gap-2">
                         {[0, 1, 2, 3, 4].map((num) => {
@@ -121,23 +170,19 @@ export default function DiagnosticPage() {
                         })}
                       </div>
                     ) : (
-                      <div className="space-y-2">
-                        <textarea 
-                          className="w-full p-4 border-2 border-slate-100 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 outline-none transition-all h-32 text-sm"
-                          placeholder="Saisissez votre réponse détaillée ici..."
-                          defaultValue={responses[q.id] || ""}
-                          onBlur={(e) => handleVote(q.id, e.target.value)}
-                        />
-                      </div>
+                      <textarea 
+                        className="w-full p-4 border-2 border-slate-100 rounded-xl focus:border-blue-500 outline-none h-32 text-sm text-slate-900"
+                        placeholder="Saisissez votre réponse ici..."
+                        defaultValue={responses[q.id] || ""}
+                        onBlur={(e) => handleVote(q.id, e.target.value)}
+                      />
                     )}
                   </div>
                   
                   <button 
                     onClick={() => handleVote(q.id, 'N/A')}
                     className={`mt-4 text-[10px] font-bold tracking-widest px-4 py-2 rounded-lg border-2 transition-all uppercase ${
-                      responses[q.id] === 'N/A' 
-                      ? 'bg-red-50 border-red-200 text-red-600' 
-                      : 'border-transparent text-slate-400 hover:text-red-500 hover:bg-red-50'
+                      responses[q.id] === 'N/A' ? 'bg-red-50 border-red-200 text-red-600' : 'border-transparent text-slate-400 hover:text-red-500'
                     }`}
                   >
                     Non applicable
@@ -147,53 +192,70 @@ export default function DiagnosticPage() {
             ))}
           </div>
 
-          {/* COLONNE DROITE : TABLEAU DE SCORES (STICKY) */}
+          {/* COLONNE DROITE : ANALYSE */}
           <aside className="w-full lg:w-[400px] sticky top-[140px]">
-            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xl shadow-slate-200/50">
-              <div className="flex items-center gap-3 mb-6 border-b pb-4">
-                <div className="p-2 bg-blue-600 rounded-lg text-white">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                </div>
-                <h2 className="font-black text-slate-800 text-lg uppercase tracking-tight">Analyse des scores</h2>
+            <div className="overflow-y-auto bg-white rounded-3xl border border-slate-200 shadow-xl flex flex-col max-h-[calc(100vh-160px)]">
+              
+              {/* 1. NOTES GLOBALES */}
+              <div className="p-6 border-b">
+                <h2 className="font-black text-slate-800 text-lg uppercase mb-4 flex items-center gap-2 text-slate-900">
+                  <span className="w-2 h-6 bg-blue-600 rounded-full"></span>
+                  Analyses
+                </h2>
               </div>
 
-              <div className="space-y-5 overflow-y-auto max-h-[calc(100vh-300px)] pr-2 custom-scrollbar">
-                {Object.entries(stats).map(([name, data]: any) => {
-                  const hasData = data.answered > 0;
-                  const scoreFinal = hasData 
-                    ? (data.totalWeightedNote / data.totalWeight).toFixed(1) 
-                    : "N/A";
+              {/* 2. DIMENSIONS */}
+              <div className="flex-1 p-6 space-y-4 bg-slate-50/50">
+                {Object.entries(stats)
+                  .sort(([nameA], [nameB]) => nameA.localeCompare(nameB, undefined, {numeric: true}))
+                  .map(([name, data]: any) => {
+                    const hasData = data.answered > 0;
+                    const scoreFinal = hasData ? (data.totalWeightedNote / data.totalWeight).toFixed(1) : "N/A";
                     
-                  return (
-                    <div key={name} className="group">
-                      <div className="flex justify-between items-end text-xs mb-2">
-                        <span className="text-slate-500 font-bold truncate pr-4">{name}</span>
-                        <span className={`font-black whitespace-nowrap px-2 py-0.5 rounded ${hasData ? 'text-blue-700 bg-blue-50' : 'text-slate-300 bg-slate-50'}`}>
-                          {scoreFinal}{hasData ? <span className="text-[10px] ml-0.5 opacity-50">/4</span> : ''}
-                        </span>
+                    return (
+                      <div key={name} className="group">
+                        <div className="flex justify-between items-end text-[11px] mb-1.5">
+                          <span className="text-slate-600 font-bold truncate pr-2 text-slate-900">{name}</span>
+                          <span className={`font-black px-1.5 py-0.5 rounded ${hasData ? 'text-blue-700 bg-blue-50' : 'text-slate-300'}`}>
+                            {scoreFinal}{hasData ? '/4' : ''}
+                          </span>
+                        </div>
+                        <div className="w-full bg-white h-1.5 rounded-full overflow-hidden border border-slate-100">
+                          {hasData && (
+                            <div 
+                              className="bg-blue-600 h-full transition-all duration-1000" 
+                              style={{ width: `${(parseFloat(scoreFinal) / 4) * 100}%` }}
+                            />
+                          )}
+                        </div>
                       </div>
-                      <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                        {hasData ? (
-                          <div 
-                            className="bg-blue-600 h-full transition-all duration-1000 ease-out shadow-[0_0_8px_rgba(37,99,235,0.4)]" 
-                            style={{ width: `${(parseFloat(scoreFinal) / 4) * 100}%` }}
-                          />
-                        ) : (
-                          <div className="bg-slate-200 h-full w-0" />
-                        )}
-                      </div>
-                    </div>
-                  );
+                    );
                 })}
               </div>
 
-              <div className="mt-8 pt-6 border-t border-slate-100">
-                <div className="bg-slate-50 p-4 rounded-xl">
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed">
-                    Note : Les moyennes sont pondérées par le niveau de criticité des questions.
-                  </p>
+              {/* 3. RADAR */}
+              <div className="p-4 border-t border-slate-100 bg-white rounded-b-3xl">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center mb-2">Visualisation Radar</p>
+                <div className="h-[220px] w-full">
+                  <DiagnosticRadar stats={stats} />
                 </div>
               </div>
+
+              {/* BOUTON ÉTAPE 2 CONDITIONNEL */}
+              {stats["6. Sensibilisation et acculturation NR"]?.totalWeight > 0 && 
+              (stats["6. Sensibilisation et acculturation NR"].totalWeightedNote / stats["6. Sensibilisation et acculturation NR"].totalWeight) < 3 && (
+                <div className="mt-4 animate-in fade-in slide-in-from-bottom-2">
+                  <Link 
+                    href={`/dashboard/etape-2?projectId=${projectId}`}
+                    className="w-full flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-lg shadow-amber-200"
+                  >
+                    <span>Étape 2 requise</span>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </Link>
+                </div>
+              )}
             </div>
           </aside>
 
