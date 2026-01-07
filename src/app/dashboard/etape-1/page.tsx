@@ -240,22 +240,6 @@ export default function DiagnosticPage() {
                   <DiagnosticRadar stats={stats} />
                 </div>
               </div>
-
-              {/* BOUTON ÉTAPE 2 CONDITIONNEL */}
-              {stats["6. Sensibilisation et acculturation NR"]?.totalWeight > 0 && 
-              (stats["6. Sensibilisation et acculturation NR"].totalWeightedNote / stats["6. Sensibilisation et acculturation NR"].totalWeight) < 3 && (
-                <div className="mt-4 animate-in fade-in slide-in-from-bottom-2">
-                  <Link 
-                    href={`/dashboard/etape-2?projectId=${projectId}`}
-                    className="w-full flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-lg shadow-amber-200"
-                  >
-                    <span>Étape 2 requise</span>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </Link>
-                </div>
-              )}
             </div>
           </aside>
 

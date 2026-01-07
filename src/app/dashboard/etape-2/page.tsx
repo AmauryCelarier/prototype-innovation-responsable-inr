@@ -145,12 +145,12 @@ export default function Etape2Page() {
         {/* ALERT STATUS */}
         {isCritical ? (
           <div className="bg-amber-50 border-l-4 border-amber-500 p-6 rounded-r-2xl mb-10 shadow-sm animate-in fade-in slide-in-from-top-4">
-            <h2 className="text-amber-800 font-black uppercase text-sm tracking-widest">Sensibilisation insuffisante ({dim6Score.toFixed(1)}/4)</h2>
+            <h2 className="text-amber-800 font-black uppercase text-sm tracking-widest">Sensibilisation et acculturation insuffisante ({dim6Score.toFixed(1)}/4)</h2>
             <p className="text-amber-700 text-sm mt-1">Le référentiel impose la validation des formations ci-dessous pour poursuivre.</p>
           </div>
         ) : (
           <div className="bg-emerald-50 border-l-4 border-emerald-500 p-6 rounded-r-2xl mb-10 shadow-sm">
-            <h2 className="text-emerald-800 font-black uppercase text-sm tracking-widest">Équipe sensibilisée ✅</h2>
+            <h2 className="text-emerald-800 font-black uppercase text-sm tracking-widest">Équipe sensibilisée</h2>
             <p className="text-emerald-700 text-sm mt-1">Votre score est suffisant, mais ces ressources restent recommandées.</p>
           </div>
         )}
