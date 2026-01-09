@@ -1,10 +1,57 @@
 'use client';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 
 export default function Etape3Page() {
   const searchParams = useSearchParams();
   const projectId = searchParams.get('projectId');
+
+  const [carbonImpact, setCarbonImpact] = useState<number | string>('');
+  const [collaborators, setCollaborators] = useState<number | string>('');
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    if (projectId) {
+      fetchProjectData();
+    }
+  }, [projectId]);
+
+  async function fetchProjectData() {
+    const { data, error } = await supabase
+      .from('projects')
+      .select('wenr_carbon_impact, collaborator_count')
+      .eq('id', projectId)
+      .single();
+
+    if (data) {
+      setCarbonImpact(data.wenr_carbon_impact || '');
+      setCollaborators(data.collaborator_count || '');
+    }
+  }
+
+  const handleSave = async () => {
+    setLoading(true);
+    setMessage('');
+
+    const { error } = await supabase
+      .from('projects')
+      .update({
+        wenr_carbon_impact: parseFloat(carbonImpact.toString()),
+        collaborator_count: parseInt(collaborators.toString()),
+      })
+      .eq('id', projectId);
+
+    setLoading(false);
+    if (error) {
+      setMessage('❌ Erreur lors de la sauvegarde');
+    } else {
+      setMessage('✅ Données enregistrées !');
+      setTimeout(() => setMessage(''), 3000);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -130,38 +177,44 @@ export default function Etape3Page() {
                 </h3>
                 
                 <div className="space-y-6">
-                  {/* CHAMP CO2 - L'INDICATEUR PRINCIPAL */}
-                  <div className="group">
-                    <label className="block text-[10px] font-black uppercase text-blue-400 mb-2 tracking-[0.2em] group-focus-within:text-blue-600 transition-colors">
-                        Impact Carbone Global (kg CO2eq / an)
+                  <div>
+                    <label className="block text-[10px] font-black uppercase text-blue-400 mb-2 tracking-[0.2em]">
+                        Impact Carbone (kg CO2eq / an)
                     </label>
-                    <div className="relative">
-                        <input 
-                            type="number" 
-                            placeholder="Ex: 450" 
-                            className="w-full p-4 pr-12 rounded-2xl border-2 border-transparent bg-white shadow-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all font-bold text-slate-700" 
-                        />
-                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-xs uppercase">kg</span>
-                    </div>
+                    <input 
+                      type="number" 
+                      value={carbonImpact}
+                      onChange={(e) => setCarbonImpact(e.target.value)}
+                      placeholder="Ex: 450" 
+                      className="w-full p-4 rounded-2xl border-2 border-transparent bg-white shadow-sm focus:border-blue-500 outline-none font-bold text-slate-700" 
+                    />
                   </div>
 
-                  {/* CHAMP EFFECTIF - POUR CALCULER LE RATIO PAR PERSONNE */}
-                  <div className="group">
-                    <label className="block text-[10px] font-black uppercase text-blue-400 mb-2 tracking-[0.2em] group-focus-within:text-blue-600 transition-colors">
-                        Nombre de collaborateurs (ETP)
+                  <div>
+                    <label className="block text-[10px] font-black uppercase text-blue-400 mb-2 tracking-[0.2em]">
+                        Nombre de collaborateurs
                     </label>
-                    <div className="relative">
-                        <input 
-                            type="number" 
-                            placeholder="Ex: 10" 
-                            className="w-full p-4 pr-12 rounded-2xl border-2 border-transparent bg-white shadow-sm focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all font-bold text-slate-700" 
-                        />
-                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-xs uppercase italic">Pers.</span>
-                    </div>
+                    <input 
+                      type="number" 
+                      value={collaborators}
+                      onChange={(e) => setCollaborators(e.target.value)}
+                      placeholder="Ex: 10" 
+                      className="w-full p-4 rounded-2xl border-2 border-transparent bg-white shadow-sm focus:border-blue-500 outline-none font-bold text-slate-700" 
+                    />
                   </div>
 
-                  <button className="w-full bg-blue-500 hover:bg-blue-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-blue-200 transition-all hover:-translate-y-1 active:scale-95">
-                    Enregistrer mon empreinte
+                  {message && (
+                    <p className={`text-center font-bold text-sm ${message.includes('') ? 'text-emerald-600' : 'text-red-600'}`}>
+                      {message}
+                    </p>
+                  )}
+
+                  <button 
+                    onClick={handleSave}
+                    disabled={loading}
+                    className="w-full bg-blue-500 hover:bg-blue-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-blue-200 transition-all disabled:opacity-50"
+                  >
+                    {loading ? 'Enregistrement...' : 'Sauvegarder'}
                   </button>
                 </div>
               </div>
