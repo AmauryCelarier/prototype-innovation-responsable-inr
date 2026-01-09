@@ -43,8 +43,6 @@ export default function Etape3Page() {
               Retour au dashboard
             </Link>
           </div>
-
-          {/* DROITE : PROCHAINE ÉTAPE */}
           <div className="flex justify-end">
             <Link 
               href={`/dashboard/etape-5?projectId=${projectId}`}
