@@ -15,7 +15,7 @@ export default function Etape3Page() {
           {/* GAUCHE : REVENIR À L'ÉTAPE 2 (OU 1) */}
           <div className="flex justify-start">
             <Link 
-              href={`/dashboard/etape-2?projectId=${projectId}`}
+              href={`/dashboard/etape-3?projectId=${projectId}`}
               className="flex items-center gap-3 px-6 py-2.5 rounded-xl font-bold bg-blue-500 hover:bg-blue-600 text-white transition-all shadow-lg shadow-blue-100 group"
             >
               <svg className="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
