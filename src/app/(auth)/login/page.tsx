@@ -84,15 +84,15 @@ export default function AuthPage() {
           {!isLogin && (
             <>
               <div className="grid grid-cols-2 gap-4">
-                <input type="text" placeholder="Prénom" required className="p-3 border rounded-xl w-full" onChange={(e) => setFirstName(e.target.value)} />
-                <input type="text" placeholder="Nom" required className="p-3 border rounded-xl w-full" onChange={(e) => setLastName(e.target.value)} />
+                <input type="text" placeholder="Prénom" required className="p-3 border rounded-xl w-full text-black" onChange={(e) => setFirstName(e.target.value)} />
+                <input type="text" placeholder="Nom" required className="p-3 border rounded-xl w-full text-black" onChange={(e) => setLastName(e.target.value)} />
               </div>
-              <input type="text" placeholder="Adresse" required className="p-3 border rounded-xl w-full" onChange={(e) => setAddress(e.target.value)} />
+              <input type="text" placeholder="Adresse" required className="p-3 border rounded-xl w-full text-black" onChange={(e) => setAddress(e.target.value)} />
             </>
           )}
           
-          <input type="email" placeholder="Email" required className="p-3 border rounded-xl w-full" onChange={(e) => setEmail(e.target.value)} />
-          <input type="password" placeholder="Mot de passe" required className="p-3 border rounded-xl w-full" onChange={(e) => setPassword(e.target.value)} />
+          <input type="email" placeholder="Email" required className="p-3 border rounded-xl w-full text-black" onChange={(e) => setEmail(e.target.value)} />
+          <input type="password" placeholder="Mot de passe" required className="p-3 border rounded-xl w-full text-black" onChange={(e) => setPassword(e.target.value)} />
 
           <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-blue-200">
             {isLogin ? 'Se connecter' : 'Créer mon profil'}

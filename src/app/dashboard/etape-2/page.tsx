@@ -182,7 +182,7 @@ export default function Etape2Page() {
             />
             <FormationCard 
               id="mooc_ia"
-              title="MOOC IA Frugale" 
+              title="MOOC IA Responsable" 
               description="Optimiser les modèles d'IA pour réduire leur impact énergétique."
               badge="Spécial IA"
               time="N/A"
