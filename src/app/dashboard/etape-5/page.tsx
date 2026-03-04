@@ -11,10 +11,10 @@ export default function Etape3Page() {
       {/* HEADER FIXE - DESIGN ÉTAPE 2 RÉUTILISÉ */}
       <div className="bg-white border-b sticky top-0 z-30 p-4">
         <div className="max-w-[1600px] mx-auto grid grid-cols-3 items-center">
-          
+
           {/* GAUCHE : REVENIR À L'ÉTAPE 2 (OU 1) */}
           <div className="flex justify-start">
-            <Link 
+            <Link
               href={`/dashboard/etape-4?projectId=${projectId}`}
               className="flex items-center gap-3 px-6 py-2.5 rounded-xl font-bold bg-blue-500 hover:bg-blue-600 text-white transition-all shadow-lg shadow-blue-100 group"
             >
@@ -22,7 +22,7 @@ export default function Etape3Page() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
               </svg>
               <div className="flex flex-col items-start leading-none">
-                <span className="text-[10px] uppercase opacity-80 tracking-tighter font-medium">Revenir à l'</span>
+                <span className="text-[10px] uppercase opacity-80 tracking-tighter font-medium">Revenir à l&apos;</span>
                 <span className="text-sm">Étape 4</span>
               </div>
             </Link>
@@ -33,8 +33,8 @@ export default function Etape3Page() {
             <h1 className="text-lg font-black text-slate-800 tracking-tight uppercase text-center">
               Étape 5 : Communiquer
             </h1>
-            <Link 
-              href="/dashboard/projects" 
+            <Link
+              href="/dashboard/projects"
               className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-colors"
             >
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -46,12 +46,12 @@ export default function Etape3Page() {
 
           {/* DROITE : PROCHAINE ÉTAPE */}
           <div className="flex justify-end">
-            <Link 
+            <Link
               href={`/dashboard/etape-5?projectId=${projectId}`}
               className="flex items-center gap-3 px-6 py-2.5 rounded-xl font-bold bg-blue-500 hover:bg-blue-600 text-white transition-all shadow-lg shadow-blue-100 group"
             >
               <div className="flex flex-col items-end leading-none">
-                <span className="text-[10px] uppercase opacity-80 tracking-tighter font-medium">Passer à l'</span>
+                <span className="text-[10px] uppercase opacity-80 tracking-tighter font-medium">Passer à l&apos;</span>
                 <span className="text-sm">Étape 5</span>
               </div>
               <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

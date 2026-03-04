@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 
 export default function ProjectsPage() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [projects, setProjects] = useState<any[]>([]);
 
   useEffect(() => {
@@ -23,18 +24,18 @@ export default function ProjectsPage() {
   return (
     <div className="p-8 max-w-5xl mx-auto min-h-screen">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-slate-800">Mes Projets</h1>
-        <Link 
-          href="/dashboard/projects/new" 
+        <h1 className="text-3xl font-bold text-slate-800">Mes Services</h1>
+        <Link
+          href="/dashboard/projects/new"
           className="border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-lg font-bold transition-colors shadow-sm"
         >
-          + Nouveau Projet
+          + Nouveau Service
         </Link>
       </div>
 
       {projects.length === 0 ? (
         <div className="text-center p-20 bg-white rounded-3xl border-2 border-dashed border-blue-200">
-          <p className="text-slate-500">Vous n'avez pas encore de projet.</p>
+          <p className="text-slate-500">Vous n&apos;avez pas encore de service.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

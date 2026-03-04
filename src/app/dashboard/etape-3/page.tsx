@@ -17,10 +17,11 @@ export default function Etape3Page() {
     if (projectId) {
       fetchProjectData();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
   async function fetchProjectData() {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('projects')
       .select('wenr_carbon_impact, collaborator_count')
       .eq('id', projectId)
@@ -58,19 +59,19 @@ export default function Etape3Page() {
       {/* HEADER FIXE - TON DESIGN CONSERVÉ */}
       <div className="bg-white border-b sticky top-0 z-30 p-4">
         <div className="max-w-[1600px] mx-auto grid grid-cols-3 items-center">
-          
+
           {/* GAUCHE : REVENIR À L'ÉTAPE 1 */}
           <div className="flex justify-start">
-            <Link 
-              href={`/dashboard/etape-1?projectId=${projectId}`}
+            <Link
+              href={`/dashboard/etape-2?projectId=${projectId}`}
               className="flex items-center gap-3 px-6 py-2.5 rounded-xl font-bold bg-blue-500 hover:bg-blue-600 text-white transition-all shadow-lg shadow-blue-100 group"
             >
               <svg className="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
               </svg>
               <div className="flex flex-col items-start leading-none">
-                <span className="text-[10px] uppercase opacity-80 tracking-tighter font-medium">Revenir à l'</span>
-                <span className="text-sm">Étape 1</span>
+                <span className="text-[10px] uppercase opacity-80 tracking-tighter font-medium">Revenir à l&apos;</span>
+                <span className="text-sm">Étape 2</span>
               </div>
             </Link>
           </div>
@@ -80,8 +81,8 @@ export default function Etape3Page() {
             <h1 className="text-lg font-black text-slate-800 tracking-tight uppercase text-center">
               Étape 3 : Alignement IT for Green
             </h1>
-            <Link 
-              href="/dashboard/projects" 
+            <Link
+              href="/dashboard/projects"
               className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-colors"
             >
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,12 +94,12 @@ export default function Etape3Page() {
 
           {/* DROITE : PROCHAINE ÉTAPE */}
           <div className="flex justify-end">
-            <Link 
+            <Link
               href={`/dashboard/etape-4?projectId=${projectId}`}
               className="flex items-center gap-3 px-6 py-2.5 rounded-xl font-bold bg-blue-500 hover:bg-blue-600 text-white transition-all shadow-lg shadow-blue-100 group"
             >
               <div className="flex flex-col items-end leading-none">
-                <span className="text-[10px] uppercase opacity-80 tracking-tighter font-medium">Passer à l'</span>
+                <span className="text-[10px] uppercase opacity-80 tracking-tighter font-medium">Passer à l&apos;</span>
                 <span className="text-sm">Étape 4</span>
               </div>
               <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -120,10 +121,10 @@ export default function Etape3Page() {
             </div>
             <div>
               <div className="flex items-center gap-3 mb-1">
-                <h2 className="text-3xl font-black text-slate-800 tracking-tight uppercase">Mesure d'impact</h2>
+                <h2 className="text-3xl font-black text-slate-800 tracking-tight uppercase">Mesure d&apos;impact</h2>
                 <span className="bg-emerald-100 text-emerald-600 text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-widest">Outil : WeNR Light</span>
               </div>
-              <p className="text-slate-500 font-medium italic">Calculateur d'empreinte environnementale du système d'information.</p>
+              <p className="text-slate-500 font-medium italic">Calculateur d&apos;empreinte environnementale du système d&apos;information.</p>
             </div>
           </div>
 
@@ -132,14 +133,14 @@ export default function Etape3Page() {
             <div className="lg:col-span-3 space-y-8">
               <div className="prose prose-slate">
                 <p className="text-slate-600 leading-relaxed text-lg">
-                  L'alignement avec les valeurs de l'<strong>IT for Green</strong> commence par la connaissance de son propre impact. Nous utilisons la méthodologie du WeNR Light (Institut du Numérique Responsable).
+                  L&apos;alignement avec les valeurs de l&apos;<strong>IT for Green</strong> commence par la connaissance de son propre impact. Nous utilisons la méthodologie du WeNR Light (Institut du Numérique Responsable).
                 </p>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
                     <span className="block text-blue-600 font-bold mb-1 italic text-sm">Étape A</span>
-                    <p className="text-xs text-slate-500 font-semibold leading-snug">Ouvrez l'outil officiel WeNR et complétez l'inventaire rapide.</p>
+                    <p className="text-xs text-slate-500 font-semibold leading-snug">Ouvrez l&apos;outil officiel WeNR et complétez l&apos;inventaire rapide.</p>
                 </div>
                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
                     <span className="block text-blue-600 font-bold mb-1 italic text-sm">Étape B</span>
@@ -148,7 +149,7 @@ export default function Etape3Page() {
               </div>
 
               <div className="pt-4">
-                <button 
+                <button
                   onClick={() => window.open('https://www.wenrlight.org/', '_blank')}
                   className="group flex items-center gap-4 bg-slate-900 text-white px-8 py-5 rounded-2xl font-bold hover:bg-blue-600 transition-all shadow-2xl shadow-slate-300"
                 >
@@ -159,7 +160,7 @@ export default function Etape3Page() {
                 </button>
                 <p className="mt-4 text-[11px] text-slate-400 font-bold uppercase tracking-widest flex items-center gap-2">
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"/></svg>
-                    Outil recommandé par l'INR (Institut du Numérique Responsable)
+                    Outil recommandé par l&apos;INR (Institut du Numérique Responsable)
                 </p>
               </div>
             </div>
@@ -175,17 +176,17 @@ export default function Etape3Page() {
                     <span className="w-2 h-6 bg-blue-500 rounded-full"></span>
                     Résultats WeNR Light
                 </h3>
-                
+
                 <div className="space-y-6">
                   <div>
                     <label className="block text-[10px] font-black uppercase text-blue-400 mb-2 tracking-[0.2em]">
                         Impact Carbone (kg CO2eq / an)
                     </label>
-                    <input 
-                      type="number" 
+                    <input
+                      type="number"
                       value={carbonImpact}
                       onChange={(e) => setCarbonImpact(e.target.value)}
-                      placeholder="Ex: 450" 
+                      placeholder="Ex: 450"
                       className="w-full p-4 rounded-2xl border-2 border-transparent bg-white shadow-sm focus:border-blue-500 outline-none font-bold text-slate-700" 
                     />
                   </div>
@@ -194,11 +195,11 @@ export default function Etape3Page() {
                     <label className="block text-[10px] font-black uppercase text-blue-400 mb-2 tracking-[0.2em]">
                         Nombre de collaborateurs
                     </label>
-                    <input 
-                      type="number" 
+                    <input
+                      type="number"
                       value={collaborators}
                       onChange={(e) => setCollaborators(e.target.value)}
-                      placeholder="Ex: 10" 
+                      placeholder="Ex: 10"
                       className="w-full p-4 rounded-2xl border-2 border-transparent bg-white shadow-sm focus:border-blue-500 outline-none font-bold text-slate-700" 
                     />
                   </div>
@@ -209,7 +210,7 @@ export default function Etape3Page() {
                     </p>
                   )}
 
-                  <button 
+                  <button
                     onClick={handleSave}
                     disabled={loading}
                     className="w-full bg-blue-500 hover:bg-blue-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-blue-200 transition-all disabled:opacity-50"

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
@@ -8,7 +9,7 @@ import Link from 'next/link';
 export default function Etape2Page() {
   const searchParams = useSearchParams();
   const projectId = searchParams.get('projectId');
-  
+
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   // État pour stocker les IDs des formations terminées : { "mooc_nr": true, "mooc_ia": false }
@@ -78,7 +79,7 @@ export default function Etape2Page() {
 
   if (loading) return <div className="p-10 text-center font-bold">Chargement du plan de formation...</div>;
 
-  const dim6Score = stats?.["6. Sensibilisation et acculturation NR"] 
+  const dim6Score = stats?.["6. Sensibilisation et acculturation NR"]
     ? (stats["6. Sensibilisation et acculturation NR"].totalWeightedNote / stats["6. Sensibilisation et acculturation NR"].totalWeight) 
     : 0;
 
@@ -89,10 +90,10 @@ export default function Etape2Page() {
       {/* HEADER FIXE */}
         <div className="bg-white border-b sticky top-0 z-30 p-4">
         <div className="max-w-[1600px] mx-auto grid grid-cols-3 items-center">
-            
+
             {/* GAUCHE : BOUTON REVENIR */}
             <div className="flex justify-start">
-            <Link 
+            <Link
                 href={`/dashboard/etape-1?projectId=${projectId}`}
                 className="flex items-center gap-3 px-6 py-2.5 rounded-xl font-bold bg-blue-500 hover:bg-blue-600 text-white transition-all shadow-lg shadow-blue-100 group"
             >
@@ -100,7 +101,7 @@ export default function Etape2Page() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
                 </svg>
                 <div className="flex flex-col items-start leading-none">
-                <span className="text-[10px] uppercase opacity-80 tracking-tighter font-medium">Revenir à l'</span>
+                <span className="text-[10px] uppercase opacity-80 tracking-tighter font-medium">Revenir à l&apos;</span>
                 <span className="text-sm">Étape 1</span>
                 </div>
             </Link>
@@ -111,8 +112,8 @@ export default function Etape2Page() {
             <h1 className="text-lg font-black text-slate-800 tracking-tight uppercase">
                 Étape 2 : Ressources Humaines
             </h1>
-            <Link 
-                href="/dashboard/projects" 
+            <Link
+                href="/dashboard/projects"
                 className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-colors"
             >
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -124,12 +125,12 @@ export default function Etape2Page() {
 
             {/* DROITE : BOUTON SUIVANT */}
             <div className="flex justify-end">
-            <Link 
+            <Link
                 href={`/dashboard/etape-3?projectId=${projectId}`}
                 className="flex items-center gap-3 px-6 py-2.5 rounded-xl font-bold bg-blue-500 hover:bg-blue-600 text-white transition-all shadow-lg shadow-blue-100 group"
             >
                 <div className="flex flex-col items-end leading-none">
-                <span className="text-[10px] uppercase opacity-80 tracking-tighter font-medium">Passer à l'</span>
+                <span className="text-[10px] uppercase opacity-80 tracking-tighter font-medium">Passer à l&apos;</span>
                 <span className="text-sm">Étape 3</span>
                 </div>
                 <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -162,27 +163,27 @@ export default function Etape2Page() {
           </div>
 
           <div className="p-8 space-y-6">
-            <FormationCard 
+            <FormationCard
               id="mooc_nr_fondamentaux"
-              title="MOOC Numérique Responsable (INR)" 
+              title="MOOC Numérique Responsable (INR)"
               description="Maîtriser les fondamentaux : enjeux environnementaux, éthiques et sociaux."
               link="https://www.academie-nr.org/"
               time="4h30"
               isCompleted={!!completedTrainings["mooc_nr_fondamentaux"]}
               onToggle={() => handleToggleTraining("mooc_nr_fondamentaux")}
             />
-            <FormationCard 
+            <FormationCard
               id="mooc_conception"
-              title="MOOC Conception Responsable (INR)" 
+              title="MOOC Conception Responsable (INR)"
               description="Apprendre à éco-concevoir vos services numériques dès la phase de design."
               link="https://www.academie-nr.org/conception-responsable/"
               time="N/A"
               isCompleted={!!completedTrainings["mooc_conception"]}
               onToggle={() => handleToggleTraining("mooc_conception")}
             />
-            <FormationCard 
+            <FormationCard
               id="mooc_ia"
-              title="MOOC IA Responsable" 
+              title="MOOC IA Responsable"
               description="Optimiser les modèles d'IA pour réduire leur impact énergétique."
               badge="Spécial IA"
               time="N/A"
@@ -198,7 +199,7 @@ export default function Etape2Page() {
 
 function FormationCard({ title, description, link, badge, time, isCompleted, onToggle }: any) {
   return (
-    <div 
+    <div
       onClick={onToggle}
       className={`flex items-start gap-6 p-6 rounded-2xl border-2 transition-all cursor-pointer ${
         isCompleted ? 'border-blue-600 bg-blue-50/50' : 'border-slate-50 hover:border-slate-200 bg-white'
@@ -211,10 +212,10 @@ function FormationCard({ title, description, link, badge, time, isCompleted, onT
         </div>
         <p className="text-sm text-slate-600 mb-4 leading-relaxed">{description}</p>
         <div className="flex items-center gap-4">
-          <a 
-            href={link} 
-            target="_blank" 
-            onClick={(e) => e.stopPropagation()} 
+          <a
+            href={link}
+            target="_blank"
+            onClick={(e) => e.stopPropagation()}
             className="text-xs font-bold text-blue-600 underline"
           >
             Accéder au cours

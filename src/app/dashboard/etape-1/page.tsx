@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
@@ -16,6 +17,7 @@ export default function DiagnosticPage() {
 
   useEffect(() => {
     fetchData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function fetchData() {
@@ -29,7 +31,7 @@ export default function DiagnosticPage() {
         .select('question_id, score')
         .eq('user_id', user.id)
         .eq('project_id', projectId);
-      
+
       if (rData) {
         const map: Record<number, string> = {};
         rData.forEach(r => map[r.question_id] = r.score);
@@ -44,11 +46,11 @@ export default function DiagnosticPage() {
 
     setResponses(prev => ({ ...prev, [questionId]: score }));
 
-    await supabase.from('responses').upsert({ 
-      user_id: user.id, 
-      question_id: questionId, 
+    await supabase.from('responses').upsert({
+      user_id: user.id,
+      question_id: questionId,
       score: score,
-      project_id: projectId 
+      project_id: projectId
     }, { onConflict: 'user_id,question_id' });
   };
 
@@ -57,7 +59,7 @@ export default function DiagnosticPage() {
       {/* HEADER FIXE */}
       <div className="bg-white border-b sticky top-0 z-30 p-4">
         <div className="max-w-[1600px] mx-auto grid grid-cols-3 items-center">
-          
+
           {/* GAUCHE : VIDE (Pour centrer le milieu) */}
           <div className="flex items-center gap-3">
             <div className="bg-blue-600 text-white p-2 rounded-lg shadow-sm">
@@ -73,14 +75,14 @@ export default function DiagnosticPage() {
             <h1 className="text-lg font-black text-slate-800 tracking-tight uppercase">
               Diagnostic de Maturité
             </h1>
-            <Link 
-              href="/dashboard/projects" 
+            <Link
+              href="/dashboard/projects"
               className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-colors"
             >
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
               </svg>
-              Retour aux projets
+              Retour aux services
             </Link>
           </div>
 
@@ -89,20 +91,19 @@ export default function DiagnosticPage() {
             {(() => {
               const dim6 = stats["6. Sensibilisation et acculturation NR"];
               const isCritical = dim6?.totalWeight > 0 && (dim6.totalWeightedNote / dim6.totalWeight) < 3;
-              
-              const nextStepUrl = isCritical 
-                ? `/dashboard/etape-2?projectId=${projectId}` 
+
+              const nextStepUrl = isCritical
+                ? `/dashboard/etape-2?projectId=${projectId}`
                 : `/dashboard/etape-3?projectId=${projectId}`;
-              
               const nextStepLabel = isCritical ? "Étape 2" : "Étape 3";
 
               return (
-                <Link 
+                <Link
                   href={nextStepUrl}
                   className="flex items-center gap-3 px-6 py-2.5 rounded-xl font-bold bg-blue-500 hover:bg-blue-600 text-white transition-all shadow-lg shadow-blue-100 group"
                 >
                   <div className="flex flex-col items-end leading-none">
-                    <span className="text-[10px] uppercase opacity-80 tracking-tighter font-medium">Passer à l'</span>
+                    <span className="text-[10px] uppercase opacity-80 tracking-tighter font-medium">Passer à l&apos</span>
                     <span className="text-sm">{nextStepLabel}</span>
                   </div>
                   <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -119,7 +120,7 @@ export default function DiagnosticPage() {
       <div className="sticky top-[69px] z-20 bg-white/80 backdrop-blur-md border-b p-3">
         <div className="max-w-[1600px] mx-auto flex items-center gap-4">
           <div className="flex-1 bg-slate-100 h-3 rounded-full overflow-hidden">
-            <div 
+            <div
               className="bg-blue-600 h-full transition-all duration-700 ease-out" 
               style={{ width: `${progressPercent}%` }}
             />
@@ -130,7 +131,7 @@ export default function DiagnosticPage() {
 
       <div className="max-w-[1600px] mx-auto px-6 mt-8">
         <div className="flex flex-col lg:flex-row gap-8 items-start">
-          
+
           {/* COLONNE GAUCHE : QUESTIONS */}
           <div className="flex-1 space-y-6 w-full lg:max-w-4xl">
             {questions.map((q) => (
@@ -150,7 +151,7 @@ export default function DiagnosticPage() {
                         {[0, 1, 2, 3, 4].map((num) => {
                           const isSelected = responses[q.id] === num.toString();
                           return (
-                            <button 
+                            <button
                               key={num}
                               onClick={() => handleVote(q.id, num.toString())}
                               className={`w-full text-left p-4 rounded-xl border-2 transition-all flex items-start gap-3 ${
@@ -170,7 +171,7 @@ export default function DiagnosticPage() {
                         })}
                       </div>
                     ) : (
-                      <textarea 
+                      <textarea
                         className="w-full p-4 border-2 border-slate-100 rounded-xl focus:border-blue-500 outline-none h-32 text-sm text-slate-900"
                         placeholder="Saisissez votre réponse ici..."
                         defaultValue={responses[q.id] || ""}
@@ -178,8 +179,8 @@ export default function DiagnosticPage() {
                       />
                     )}
                   </div>
-                  
-                  <button 
+
+                  <button
                     onClick={() => handleVote(q.id, 'N/A')}
                     className={`mt-4 text-[10px] font-bold tracking-widest px-4 py-2 rounded-lg border-2 transition-all uppercase ${
                       responses[q.id] === 'N/A' ? 'bg-red-50 border-red-200 text-red-600' : 'border-transparent text-slate-400 hover:text-red-500'
@@ -195,7 +196,7 @@ export default function DiagnosticPage() {
           {/* COLONNE DROITE : ANALYSE */}
           <aside className="w-full lg:w-[400px] sticky top-[140px]">
             <div className="overflow-y-auto bg-white rounded-3xl border border-slate-200 shadow-xl flex flex-col max-h-[calc(100vh-160px)]">
-              
+
               {/* 1. NOTES GLOBALES */}
               <div className="p-6 border-b">
                 <h2 className="font-black text-slate-800 text-lg uppercase mb-4 flex items-center gap-2 text-slate-900">
@@ -211,7 +212,7 @@ export default function DiagnosticPage() {
                   .map(([name, data]: any) => {
                     const hasData = data.answered > 0;
                     const scoreFinal = hasData ? (data.totalWeightedNote / data.totalWeight).toFixed(1) : "N/A";
-                    
+
                     return (
                       <div key={name} className="group">
                         <div className="flex justify-between items-end text-[11px] mb-1.5">
@@ -222,8 +223,8 @@ export default function DiagnosticPage() {
                         </div>
                         <div className="w-full bg-white h-1.5 rounded-full overflow-hidden border border-slate-100">
                           {hasData && (
-                            <div 
-                              className="bg-blue-600 h-full transition-all duration-1000" 
+                            <div
+                              className="bg-blue-600 h-full transition-all duration-1000"
                               style={{ width: `${(parseFloat(scoreFinal) / 4) * 100}%` }}
                             />
                           )}
