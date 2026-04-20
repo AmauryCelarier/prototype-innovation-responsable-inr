@@ -88,31 +88,19 @@ export default function DiagnosticPage() {
 
           {/* DROITE : BOUTON SUIVANT DYNAMIQUE */}
           <div className="flex justify-end">
-            {(() => {
-              const dim6 = stats["6. Sensibilisation et acculturation NR"];
-              const isCritical = dim6?.totalWeight > 0 && (dim6.totalWeightedNote / dim6.totalWeight) < 3;
-
-              const nextStepUrl = isCritical
-                ? `/dashboard/etape-2?projectId=${projectId}`
-                : `/dashboard/etape-3?projectId=${projectId}`;
-              const nextStepLabel = isCritical ? "Étape 2" : "Étape 3";
-
-              return (
-                <Link
-                  href={nextStepUrl}
-                  className="flex items-center gap-3 px-6 py-2.5 rounded-xl font-bold bg-blue-500 hover:bg-blue-600 text-white transition-all shadow-lg shadow-blue-100 group"
-                >
-                  <div className="flex flex-col items-end leading-none">
-                    <span className="text-[10px] uppercase opacity-80 tracking-tighter font-medium">Passer à l&apos</span>
-                    <span className="text-sm">{nextStepLabel}</span>
-                  </div>
-                  <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </Link>
-              );
-            })()}
-          </div>
+                      <Link
+                        href={`/dashboard/etape-2?projectId=${projectId}`}
+                        className="flex items-center gap-3 px-6 py-2.5 rounded-xl font-bold bg-blue-500 hover:bg-blue-600 text-white transition-all shadow-lg shadow-blue-100 group"
+                      >
+                        <div className="flex flex-col items-end leading-none">
+                          <span className="text-[10px] uppercase opacity-80 tracking-tighter font-medium">Passer à l&apos;</span>
+                          <span className="text-sm">Étape 2</span>
+                        </div>
+                        <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                      </Link>
+                    </div>
         </div>
       </div>
 
