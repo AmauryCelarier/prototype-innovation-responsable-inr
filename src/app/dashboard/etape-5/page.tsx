@@ -123,7 +123,7 @@ export default function Etape5Page() {
 
         {/* SECTION FOOTER DE LA PAGE */}
         <div className="mt-16 p-8 bg-slate-800 rounded-[2rem] text-center text-white">
-          <h4 className="text-lg font-bold mb-2">Félicitations ! 🎉</h4>
+          <h4 className="text-lg font-bold mb-2">Félicitations !</h4>
           <p className="text-slate-400 text-sm font-medium">
             Vous avez parcouru l&apos;ensemble des étapes de l&apos;autodiagnostic. 
             Votre projet est désormais aligné avec les principes de l&apos;Innovation Numérique Responsable.

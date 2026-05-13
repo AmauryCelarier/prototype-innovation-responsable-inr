@@ -21,37 +21,89 @@ export default function ProjectsPage() {
     loadProjects();
   }, []);
 
+  const handleDelete = async (id: string, name: string) => {
+  if (confirm(`Êtes-vous sûr de vouloir supprimer le service "${name}" ? Cela supprimera aussi tous les diagnostics associés.`)) {
+
+    const { error: respError } = await supabase
+      .from('responses')
+      .delete()
+      .eq('project_id', id); // vérifie bien que la colonne s'appelle project_id
+
+    if (respError) {
+      alert("Erreur lors de la suppression des réponses : " + respError.message);
+      return;
+    }
+
+    const { error: projError } = await supabase
+      .from('projects')
+      .delete()
+      .eq('id', id);
+
+    if (!projError) {
+      setProjects(projects.filter(p => p.id !== id));
+    } else {
+      alert("Erreur lors de la suppression du projet : " + projError.message);
+    }
+  }
+};
+
   return (
     <div className="p-8 max-w-5xl mx-auto min-h-screen">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-slate-800">Mes Services</h1>
+        <div>
+          <h1 className="text-3xl font-black text-slate-800 uppercase italic tracking-tighter">Mes Services</h1>
+          <p className="text-slate-500 text-sm">Gérez vos diagnostics et fiches récapitulatives</p>
+        </div>
         <Link
           href="/dashboard/projects/new"
-          className="border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-lg font-bold transition-colors shadow-sm"
+          className="bg-blue-600 text-white px-6 py-3 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-blue-700 transition-all shadow-lg hover:shadow-blue-200"
         >
           + Nouveau Service
         </Link>
       </div>
 
-      {projects.length === 0 ? (
-        <div className="text-center p-20 bg-white rounded-3xl border-2 border-dashed border-blue-200">
-          <p className="text-slate-500">Vous n&apos;avez pas encore de service.</p>
-        </div>
-      ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {projects.map((p) => (
-            <Link key={p.id} href={`/dashboard/etape-1?projectId=${p.id}`} className="block group">
-              <div className="bg-white p-6 rounded-2xl border-2 border-blue-600 shadow-sm group-hover:shadow-md group-hover:bg-blue-50 transition-all">
-                <h2 className="text-xl font-bold mb-2 text-slate-800">{p.nom_projet}</h2>
-                <p className="text-slate-500 text-sm line-clamp-1">{p.description}</p>
-                <div className="mt-4 text-blue-600 font-bold text-sm">
-                  Accéder au diagnostic →
+            <div key={p.id} className="bg-white p-8 rounded-[2.5rem] border-2 border-slate-100 shadow-sm hover:shadow-xl transition-all flex flex-col justify-between">
+              <div>
+                <div className="flex justify-between items-start mb-4">
+                  <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest">
+                    {p.domaine || 'Général'}
+                  </span>
+                  <button 
+                    onClick={() => handleDelete(p.id, p.nom_projet)}
+                    className="text-slate-300 hover:text-red-500 transition-colors"
+                    title="Supprimer le service"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
                 </div>
+                
+                <h2 className="text-2xl font-black mb-2 text-slate-800 leading-tight">{p.nom_projet}</h2>
+                <p className="text-slate-500 text-sm line-clamp-2 mb-6">{p.description || "Aucune description fournie."}</p>
               </div>
-            </Link>
+
+              <div className="space-y-3">
+                <Link 
+                  href={`/dashboard/etape-1?projectId=${p.id}`}
+                  className="block w-full text-center bg-slate-900 text-white p-4 rounded-2xl font-bold text-sm hover:bg-blue-600 transition-all"
+                >
+                  Continuer le diagnostic
+                </Link>
+                
+                <Link 
+                  href={`/dashboard/projects/${p.id}`} 
+                  className="block w-full text-center border-2 border-slate-100 text-slate-600 p-4 rounded-2xl font-bold text-sm hover:border-blue-600 hover:text-blue-600 transition-all"
+                >
+                  Voir la fiche récapitulative
+                </Link>
+              </div>
+            </div>
           ))}
         </div>
-      )}
     </div>
   );
 }
+

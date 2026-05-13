@@ -3,82 +3,8 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
+import { SOUVERAINETE_REF } from '@/lib/souverainete';
 
-// On définit les critères de souveraineté directement basés sur le Guide Digital League
-const SOUVERAINETE_REF = [
-  {
-    id: 'SOUV-1',
-    titre: 'Conformité Réglementaire',
-    question: 'Quel est votre degré de conformité aux réglementations (NIS2, DORA, RGPD) ?',
-    description: 'Anticipation des exigences de sécurité et de résilience imposées par l\'UE.',
-    recommandations: {
-      0: 'Non-conforme ou non-évalué.',
-      1: 'Mise en conformité RGPD de base effectuée.',
-      3: 'Analyse d\'impact effectuée pour NIS2 / DORA.',
-      5: 'Conformité totale et auditée régulièrement.'
-    }
-  },
-  {
-    id: 'SOUV-2',
-    titre: 'Juridiction de l\'hébergement',
-    question: 'L\'hébergement de vos données critiques est-il opéré sous juridiction européenne ?',
-    description: 'Conformité aux lois de protection des données (RGPD) et protection contre les lois extra-européennes (Cloud Act).',
-    recommandations: {
-      0: 'Hébergement hors UE sans garantie de protection.',
-      1: 'Hébergement mixte ou en cours de migration vers l\'UE.',
-      3: 'Hébergement 100% UE (France ou Europe).',
-      5: 'Hébergement certifié SecNumCloud ou équivalent souverain.'
-    }
-  },
-  {
-    id: 'SOUV-3',
-    titre: 'Proportion de fournisseurs européens',
-    question: 'Quelle est la part de vos fournisseurs techniques basés en Europe ?',
-    description: 'L\'objectif est de diversifier les dépendances pour éviter un monopole de solutions extra-européennes.',
-    recommandations: {
-      0: 'Dépendance totale à des solutions extra-européennes.',
-      1: 'Quelques solutions locales pour des services non-critiques.',
-      3: 'Majorité de fournisseurs européens pour les services clés.',
-      5: 'Indépendance stratégique : alternatives locales identifiées et prêtes.'
-    }
-  },
-  {
-    id: 'SOUV-4',
-    titre: 'Clauses de réversibilité',
-    question: 'Vos contrats incluent-ils des clauses de réversibilité claires ?',
-    description: 'Capacité à récupérer vos données et à changer de fournisseur rapidement sans perte d\'activité.',
-    recommandations: {
-      0: 'Aucune clause de sortie prévue.',
-      1: 'Clauses existantes mais complexes ou coûteuses.',
-      3: 'Réversibilité contractuelle claire et documentée.',
-      5: 'Tests de réversibilité effectués et validés avec succès.'
-    }
-  },
-  {
-    id: 'SOUV-5',
-    titre: 'Interopérabilité & Standards Ouverts',
-    question: 'Vos solutions évitent-elles l\'enfermement propriétaire (Vendor Lock-in) ?',
-    description: 'Usage de standards ouverts, d\'APIs documentées ou de logiciels libres (Open Source).',
-    recommandations: {
-      0: 'Format propriétaire fermé (impossible de migrer).',
-      1: 'Usage minoritaire de standards ouverts.',
-      3: 'Architecture basée sur des APIs ouvertes et formats standards.',
-      5: 'Logiciels Libres / Open Source favorisés systématiquement.'
-    }
-  },
-  {
-    id: 'SOUV-6',
-    titre: 'Maîtrise des données sensibles',
-    question: 'Avez-vous cartographié et protégé vos données sensibles/critiques ?',
-    description: 'Identification précise de ce qui doit être protégé en priorité absolue.',
-    recommandations: {
-      0: 'Aucune cartographie des données.',
-      1: 'Inventaire partiel des données stockées.',
-      3: 'Cartographie complète et mesures de protection adaptées.',
-      5: 'Gouvernance des données active (Chiffrement, cloisonnement).'
-    }
-  }
-];
 
 export default function Etape4Souverainete() {
   const searchParams = useSearchParams();
@@ -94,10 +20,12 @@ export default function Etape4Souverainete() {
       if (!projectId) return;
       setLoading(true);
       try {
-        const { data: savedScores } = await supabase
-          .from('resilience_responses') // On garde la même table pour la compatibilité
+        const { data: savedScores, error } = await supabase
+          .from('resilience_responses')
           .select('critere_id, score')
           .eq('project_id', projectId);
+
+        if (error) throw error;
 
         if (savedScores) {
           const formattedAnswers = savedScores.reduce((acc, curr) => ({
@@ -120,39 +48,48 @@ export default function Etape4Souverainete() {
     setSaving(true);
     setMessage('');
 
+    // On prépare les données en s'assurant que l'ID projet est bien un nombre
+    // et en ajoutant un timestamp de mise à jour
     const dataToSave = Object.entries(reponses).map(([critereId, scoreValue]) => ({
-      project_id: projectId,
+      project_id: Number(projectId),
       critere_id: critereId,
-      score: scoreValue
+      score: scoreValue,
+      updated_at: new Date().toISOString()
     }));
 
     try {
+      // Upsert gère la mise à jour si la paire (project_id, critere_id) existe déjà
       const { error } = await supabase
         .from('resilience_responses')
-        .upsert(dataToSave, { onConflict: 'project_id,critere_id' });
+        .upsert(dataToSave, { 
+          onConflict: 'project_id,critere_id' 
+        });
 
       if (error) throw error;
-      setMessage('Scoring souveraineté enregistré');
+      
+      setMessage('Scoring souveraineté enregistré avec succès');
       setTimeout(() => setMessage(''), 3000);
-    } catch (err) {
-      console.error(err);
-      setMessage('Erreur de sauvegarde');
+    } 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    catch (err: any) {
+      console.error("Erreur sauvegarde:", err);
+      setMessage(`Erreur : ${err.message || 'Impossible de sauvegarder'}`);
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) return <div className="p-20 text-center font-black animate-pulse uppercase tracking-widest">Analyse de la souveraineté...</div>;
+  if (loading) return <div className="p-20 text-center font-black animate-pulse uppercase tracking-widest text-slate-800">Analyse de la souveraineté...</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-20 text-slate-900">
       {/* HEADER */}
       <div className="bg-white border-b sticky top-0 z-30 p-4">
         <div className="max-w-[1600px] mx-auto grid grid-cols-3 items-center">
           <div className="flex justify-start">
             <Link
                 href={`/dashboard/etape-3?projectId=${projectId}`}
-                className="flex items-center gap-3 px-6 py-2.5 rounded-xl font-bold bg-blue-500 hover:bg-blue-600 text-white transition-all shadow-lg shadow-blue-100 group"
+                className="flex items-center gap-3 px-6 py-2.5 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white transition-all shadow-lg shadow-blue-100 group"
             >
                 <svg className="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
@@ -178,7 +115,7 @@ export default function Etape4Souverainete() {
           <div className="flex justify-end">
             <Link
                 href={`/dashboard/etape-5?projectId=${projectId}`}
-                className="flex items-center gap-3 px-6 py-2.5 rounded-xl font-bold bg-blue-500 hover:bg-blue-600 text-white transition-all shadow-lg shadow-blue-100 group"
+                className="flex items-center gap-3 px-6 py-2.5 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white transition-all shadow-lg shadow-blue-100 group"
             >
                 <div className="flex flex-col items-end leading-none">
                 <span className="text-[10px] uppercase opacity-80 tracking-tighter font-medium">Passer à l&apos;</span>
@@ -189,7 +126,6 @@ export default function Etape4Souverainete() {
                 </svg>
             </Link>
             </div>
-
         </div>
       </div>
 
@@ -197,7 +133,7 @@ export default function Etape4Souverainete() {
       <div className="max-w-4xl mx-auto px-6 mt-12 space-y-10">
         <div className="bg-blue-900 text-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
           <div className="relative z-10">
-            <h2 className="text-2xl font-black uppercase italic mb-2 tracking-tight">Scoring de Souveraineté Numérique</h2>
+            <h2 className="text-2xl font-black uppercase italic mb-2 tracking-tight text-white">Scoring de Souveraineté Numérique</h2>
             <p className="text-blue-200 text-sm font-medium leading-relaxed max-w-xl">
               Évaluez votre dépendance technologique. L&apos;indépendance stratégique est le premier pilier de la robustesse organisationnelle.
             </p>
@@ -240,10 +176,10 @@ export default function Etape4Souverainete() {
             {reponses[item.id] !== undefined && (
               <div className="bg-slate-900 text-white p-6 rounded-[2rem] border-l-8 border-blue-500">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-[10px] font-bold">!</div>
+                  <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-[10px] font-bold text-white">!</div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-blue-400">Impact & Recommandation</p>
                 </div>
-                <p className="text-sm font-bold leading-relaxed">
+                <p className="text-sm font-bold leading-relaxed text-slate-100">
                   {item.recommandations[reponses[item.id] as keyof typeof item.recommandations]}
                 </p>
               </div>
@@ -251,6 +187,7 @@ export default function Etape4Souverainete() {
           </div>
         ))}
 
+        {/* ACTIONS FIXES */}
         <div className="sticky bottom-8 z-40 px-4">
           <div className="max-w-md mx-auto bg-white/90 backdrop-blur-xl p-4 rounded-[2.5rem] shadow-2xl border border-white flex flex-col items-center gap-4">
             {message && <p className="font-black text-blue-600 text-[10px] uppercase tracking-widest animate-pulse">{message}</p>}

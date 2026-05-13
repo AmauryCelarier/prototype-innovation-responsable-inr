@@ -4,223 +4,206 @@ import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 
+// On adapte les critères pour correspondre aux résultats de monACVnumérique.fr
+const ACV_INDICATORS = [
+  { id: 'acv_score_global', label: 'Score Global de Performance', desc: 'Note globale obtenue sur MonACV (sur 100).', unit: '/100' },
+  { id: 'acv_terminaux', label: 'Impact Terminaux (Utilisateurs)', desc: 'Part de l\'impact liée à la fabrication et l\'usage des appareils.', unit: '%' },
+  { id: 'acv_reseau', label: 'Impact Réseau (Transport)', desc: 'Part de l\'impact liée aux infrastructures réseau et télécoms.', unit: '%' },
+  { id: 'acv_datacenter', label: 'Impact Centre de Données', desc: 'Part de l\'impact liée à l\'hébergement et au stockage.', unit: '%' }
+];
+
 export default function Etape3Page() {
   const searchParams = useSearchParams();
   const projectId = searchParams.get('projectId');
 
   const [carbonImpact, setCarbonImpact] = useState<number | string>('');
   const [collaborators, setCollaborators] = useState<number | string>('');
+  const [acvValues, setAcvValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    if (projectId) {
-      fetchProjectData();
+    async function fetchProjectData() {
+      if (!projectId) return;
+
+      // 1. On récupère WeNR
+      const { data: projectData } = await supabase
+        .from('projects')
+        .select('wenr_carbon_impact, collaborator_count')
+        .eq('id', projectId)
+        .single();
+
+      if (projectData) {
+        setCarbonImpact(projectData.wenr_carbon_impact || '');
+        setCollaborators(projectData.collaborator_count || '');
+      }
+
+      // 2. On récupère les scores ACV ADEME
+      const { data: respData } = await supabase
+        .from('responses')
+        .select('question_id, score')
+        .eq('project_id', projectId)
+        .eq('step_id', 3);
+
+      if (respData) {
+        const formatted = respData.reduce((acc, curr) => ({
+          ...acc, 
+          [curr.question_id]: curr.score || ''
+        }), {});
+        setAcvValues(formatted);
+      }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    fetchProjectData();
   }, [projectId]);
-
-  async function fetchProjectData() {
-    const { data } = await supabase
-      .from('projects')
-      .select('wenr_carbon_impact, collaborator_count')
-      .eq('id', projectId)
-      .single();
-
-    if (data) {
-      setCarbonImpact(data.wenr_carbon_impact || '');
-      setCollaborators(data.collaborator_count || '');
-    }
-  }
 
   const handleSave = async () => {
     setLoading(true);
     setMessage('');
 
-    const { error } = await supabase
-      .from('projects')
-      .update({
-        wenr_carbon_impact: parseFloat(carbonImpact.toString()),
-        collaborator_count: parseInt(collaborators.toString()),
-      })
-      .eq('id', projectId);
+    try {
+      // Sauvegarde Quantitative (WeNR)
+      await supabase.from('projects').update({
+          wenr_carbon_impact: parseFloat(carbonImpact.toString()) || 0,
+          collaborator_count: parseInt(collaborators.toString()) || 0,
+      }).eq('id', projectId);
 
-    setLoading(false);
-    if (error) {
-      setMessage('❌ Erreur lors de la sauvegarde');
-    } else {
-      setMessage('✅ Données enregistrées !');
+      const { data: authData } = await supabase.auth.getUser();
+      const userId = authData.user?.id || null;
+
+      // Sauvegarde Qualitative (ACV ADEME)
+      const acvEntries = Object.entries(acvValues).map(([qId, val]) => ({
+        project_id: projectId,
+        step_id: 3,
+        question_id: qId,
+        category: 'ACV_ADEME',
+        score: val,
+        user_id: userId
+      }));
+
+      if (acvEntries.length > 0) {
+        const { error: rError } = await supabase
+          .from('responses')
+          .upsert(acvEntries, { onConflict: 'project_id,step_id,question_id' });
+        if (rError) throw rError;
+      }
+
+      setMessage('✅ Données d\'impact enregistrées !');
       setTimeout(() => setMessage(''), 3000);
+    } catch (error) {
+      console.error(error);
+      setMessage('❌ Erreur lors de la sauvegarde');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      {/* HEADER FIXE - TON DESIGN CONSERVÉ */}
+    <div className="min-h-screen bg-gray-50 pb-20 text-slate-900">
+      {/* HEADER */}
       <div className="bg-white border-b sticky top-0 z-30 p-4">
         <div className="max-w-[1600px] mx-auto grid grid-cols-3 items-center">
-
-          {/* GAUCHE : REVENIR À L'ÉTAPE 1 */}
           <div className="flex justify-start">
-            <Link
-              href={`/dashboard/etape-2?projectId=${projectId}`}
-              className="flex items-center gap-3 px-6 py-2.5 rounded-xl font-bold bg-blue-500 hover:bg-blue-600 text-white transition-all shadow-lg shadow-blue-100 group"
-            >
-              <svg className="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
-              </svg>
-              <div className="flex flex-col items-start leading-none">
-                <span className="text-[10px] uppercase opacity-80 tracking-tighter font-medium">Revenir à l&apos;</span>
-                <span className="text-sm">Étape 2</span>
-              </div>
+            <Link href={`/dashboard/etape-2?projectId=${projectId}`} className="flex items-center gap-3 px-6 py-2.5 rounded-xl font-bold bg-blue-500 hover:bg-blue-600 text-white transition-all shadow-lg">
+              <span className="text-sm">Étape 2</span>
             </Link>
           </div>
-
-          {/* MILIEU : TITRE + RETOUR DASHBOARD */}
-          <div className="flex flex-col items-center gap-1">
-            <h1 className="text-lg font-black text-slate-800 tracking-tight uppercase text-center">
-              Étape 3 : Alignement IT for Green
-            </h1>
-            <Link
-              href="/dashboard/projects"
-              className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-colors"
-            >
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-              Retour au dashboard
-            </Link>
+          <div className="text-center">
+            <h1 className="text-lg font-black uppercase tracking-tight">Étape 3 : Mesure d&apos;Impact (ACV & WeNR)</h1>
           </div>
-
-          {/* DROITE : PROCHAINE ÉTAPE */}
           <div className="flex justify-end">
-            <Link
-              href={`/dashboard/etape-4?projectId=${projectId}`}
-              className="flex items-center gap-3 px-6 py-2.5 rounded-xl font-bold bg-blue-500 hover:bg-blue-600 text-white transition-all shadow-lg shadow-blue-100 group"
-            >
-              <div className="flex flex-col items-end leading-none">
-                <span className="text-[10px] uppercase opacity-80 tracking-tighter font-medium">Passer à l&apos;</span>
-                <span className="text-sm">Étape 4</span>
-              </div>
-              <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
+            <Link href={`/dashboard/etape-4?projectId=${projectId}`} className="flex items-center gap-3 px-6 py-2.5 rounded-xl font-bold bg-blue-500 hover:bg-blue-600 text-white transition-all shadow-lg">
+              <span className="text-sm">Étape 4</span>
             </Link>
           </div>
         </div>
       </div>
 
-      {/* CONTENU PRINCIPAL : INTÉGRATION WENR LIGHT */}
-      <div className="max-w-5xl mx-auto px-6 mt-12">
-        <div className="bg-white rounded-[2.5rem] p-10 shadow-xl shadow-slate-200/50 border border-slate-100">
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mb-12 border-b border-slate-50 pb-8">
-            <div className="w-20 h-20 bg-emerald-500 text-white rounded-3xl flex items-center justify-center shadow-lg shadow-emerald-100">
-               <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-               </svg>
-            </div>
+      <div className="max-w-5xl mx-auto px-6 mt-12 space-y-8">
+        
+        {/* SECTION 1 : WENR */}
+        <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center text-white font-bold">1</div>
             <div>
-              <div className="flex items-center gap-3 mb-1">
-                <h2 className="text-3xl font-black text-slate-800 tracking-tight uppercase">Mesure d&apos;impact</h2>
-                <span className="bg-emerald-100 text-emerald-600 text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-widest">Outil : WeNR Light</span>
-              </div>
-              <p className="text-slate-500 font-medium italic">Calculateur d&apos;empreinte environnementale du système d&apos;information.</p>
+              <h2 className="text-xl font-black uppercase tracking-tight">Empreinte SI (WeNR Light)</h2>
+              <p className="text-sm text-slate-500">Mesure physique globale (Carbone).</p>
             </div>
           </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
-            {/* EXPLICATION */}
-            <div className="lg:col-span-3 space-y-8">
-              <div className="prose prose-slate">
-                <p className="text-slate-600 leading-relaxed text-lg">
-                  L&apos;alignement avec les valeurs de l&apos;<strong>IT for Green</strong> commence par la connaissance de son propre impact. Nous utilisons la méthodologie du WeNR Light (Institut du Numérique Responsable).
-                </p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <span className="block text-blue-600 font-bold mb-1 italic text-sm">Étape A</span>
-                    <p className="text-xs text-slate-500 font-semibold leading-snug">Ouvrez l&apos;outil officiel WeNR et complétez l&apos;inventaire rapide.</p>
-                </div>
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <span className="block text-blue-600 font-bold mb-1 italic text-sm">Étape B</span>
-                    <p className="text-xs text-slate-500 font-semibold leading-snug">Reportez vos indicateurs (CO2 et Nombre de collaborateur) dans le formulaire ci-contre.</p>
-                </div>
-              </div>
-
-              <div className="pt-4">
-                <button
-                  onClick={() => window.open('https://www.wenrlight.org/', '_blank')}
-                  className="group flex items-center gap-4 bg-slate-900 text-white px-8 py-5 rounded-2xl font-bold hover:bg-blue-600 transition-all shadow-2xl shadow-slate-300"
-                >
-                  <span className="text-lg">Lancer le calculateur WeNR</span>
-                  <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                </button>
-                <p className="mt-4 text-[11px] text-slate-400 font-bold uppercase tracking-widest flex items-center gap-2">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"/></svg>
-                    Outil recommandé par l&apos;INR (Institut du Numérique Responsable)
-                </p>
-              </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Utilisez le calculateur WeNR Light pour obtenir l&apos;impact de votre structure.
+              </p>
+              <button onClick={() => window.open('https://www.wenrlight.org/', '_blank')} className="text-xs font-black uppercase text-blue-600 hover:underline flex items-center gap-2">
+                Ouvrir WeNR Light →
+              </button>
             </div>
-
-            {/* FORMULAIRE DE REPORT DE RÉSULTATS - CORRIGÉ */}
-            <div className="lg:col-span-2">
-              <div className="bg-blue-50/50 p-8 rounded-[2rem] border-2 border-blue-100/50 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-4 opacity-10">
-                    <svg className="w-24 h-24" fill="currentColor" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/></svg>
-                </div>
-
-                <h3 className="font-black text-blue-900 uppercase tracking-tight mb-8 flex items-center gap-2 text-slate-900">
-                    <span className="w-2 h-6 bg-blue-500 rounded-full"></span>
-                    Résultats WeNR Light
-                </h3>
-
-                <div className="space-y-6">
+            <div className="grid grid-cols-1 gap-4 bg-slate-50 p-6 rounded-3xl">
+               <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] font-black uppercase text-blue-400 mb-2 tracking-[0.2em]">
-                        Impact Carbone (kg CO2eq / an)
-                    </label>
-                    <input
-                      type="number"
-                      value={carbonImpact}
-                      onChange={(e) => setCarbonImpact(e.target.value)}
-                      placeholder="Ex: 450"
-                      className="w-full p-4 rounded-2xl border-2 border-transparent bg-white shadow-sm focus:border-blue-500 outline-none font-bold text-slate-700" 
-                    />
+                    <label className="text-[10px] font-black uppercase text-slate-400 block mb-1">kg CO2 eq / an</label>
+                    <input type="number" value={carbonImpact} onChange={(e) => setCarbonImpact(e.target.value)} className="w-full p-3 rounded-xl border-none shadow-inner font-bold" placeholder="0" />
                   </div>
-
                   <div>
-                    <label className="block text-[10px] font-black uppercase text-blue-400 mb-2 tracking-[0.2em]">
-                        Nombre de collaborateurs
-                    </label>
-                    <input
-                      type="number"
-                      value={collaborators}
-                      onChange={(e) => setCollaborators(e.target.value)}
-                      placeholder="Ex: 10"
-                      className="w-full p-4 rounded-2xl border-2 border-transparent bg-white shadow-sm focus:border-blue-500 outline-none font-bold text-slate-700" 
-                    />
+                    <label className="text-[10px] font-black uppercase text-slate-400 block mb-1">Collaborateurs</label>
+                    <input type="number" value={collaborators} onChange={(e) => setCollaborators(e.target.value)} className="w-full p-3 rounded-xl border-none shadow-inner font-bold" placeholder="0" />
                   </div>
-
-                  {message && (
-                    <p className={`text-center font-bold text-sm ${message.includes('') ? 'text-emerald-600' : 'text-red-600'}`}>
-                      {message}
-                    </p>
-                  )}
-
-                  <button
-                    onClick={handleSave}
-                    disabled={loading}
-                    className="w-full bg-blue-500 hover:bg-blue-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-blue-200 transition-all disabled:opacity-50"
-                  >
-                    {loading ? 'Enregistrement...' : 'Sauvegarder'}
-                  </button>
-                </div>
-              </div>
+               </div>
             </div>
           </div>
+        </div>
+
+        {/* SECTION 2 : ACV (REPORT MON ACV NUMÉRIQUE) */}
+        <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-blue-500 rounded-2xl flex items-center justify-center text-white font-bold">2</div>
+                <div>
+                <h2 className="text-xl font-black uppercase tracking-tight">Impact Service (MonACV)</h2>
+                <p className="text-sm text-slate-500">Report des résultats de l&apos;Analyse de Cycle de Vie.</p>
+                </div>
+            </div>
+            <button onClick={() => window.open('https://monacvnumerique.fr/', '_blank')} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-[10px] font-bold uppercase transition-colors">
+                Lancer MonACVnumérique.fr ↗
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            {ACV_INDICATORS.map((ind) => (
+              <div key={ind.id} className="flex flex-col md:flex-row md:items-center justify-between p-6 bg-slate-50 rounded-3xl gap-4">
+                <div className="max-w-md">
+                  <h4 className="font-black text-slate-800 uppercase text-sm">{ind.label}</h4>
+                  <p className="text-xs text-slate-500">{ind.desc}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={acvValues[ind.id] || ''}
+                      onChange={(e) => setAcvValues({ ...acvValues, [ind.id]: e.target.value })}
+                      className="w-24 p-3 rounded-xl border-none shadow-inner font-black text-center text-blue-600"
+                      placeholder="0"
+                    />
+                    <span className="absolute -right-8 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">{ind.unit}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* BOUTON SAUVEGARDE */}
+        <div className="flex flex-col items-center gap-4">
+           {message && <p className="font-black text-sm uppercase animate-pulse text-blue-600">{message}</p>}
+           <button
+            onClick={handleSave}
+            disabled={loading}
+            className="bg-slate-900 text-white px-12 py-5 rounded-full font-black uppercase tracking-widest shadow-2xl hover:bg-blue-600 transition-all disabled:opacity-50"
+           >
+             {loading ? 'Enregistrement...' : 'Valider l\'analyse d\'impact'}
+           </button>
         </div>
       </div>
     </div>
