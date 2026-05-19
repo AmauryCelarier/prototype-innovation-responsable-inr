@@ -165,8 +165,8 @@ export default function Etape2Page() {
           <div className="p-8 space-y-6">
             <FormationCard
               id="mooc_nr_fondamentaux"
-              title="MOOC Numérique Responsable (INR)"
-              description="Maîtriser les fondamentaux : enjeux environnementaux, éthiques et sociaux."
+              title="MOOC Numérique Responsable — Formation complète"
+              description="11 modules pour maîtriser les fondamentaux du numérique responsable : impacts environnementaux, sociaux, économiques, géopolitiques et solutions concrètes."
               link="https://www.academie-nr.org/"
               time="4h30"
               isCompleted={!!completedTrainings["mooc_nr_fondamentaux"]}
@@ -174,19 +174,19 @@ export default function Etape2Page() {
             />
             <FormationCard
               id="mooc_conception"
-              title="MOOC Conception Responsable (INR)"
-              description="Apprendre à éco-concevoir vos services numériques dès la phase de design."
+              title="MOOC Conception responsable d'un service numérique"
+              description="10 modules vidéo pour acquérir les premières clés de la conception responsable : démarche, outils, références et mise en pratique professionnelle."
               link="https://www.academie-nr.org/conception-responsable/"
-              time="N/A"
+              time="~1h30"
               isCompleted={!!completedTrainings["mooc_conception"]}
               onToggle={() => handleToggleTraining("mooc_conception")}
             />
             <FormationCard
               id="mooc_ia"
               title="MOOC IA Responsable"
-              description="Optimiser les modèles d'IA pour réduire leur impact énergétique."
+              description="Comprendre les enjeux éthiques, environnementaux et de gouvernance de l'intelligence artificielle. Une formation d'une heure pour agir face aux défis de l'IA."
               badge="Spécial IA"
-              time="N/A"
+              time="~1h"
               isCompleted={!!completedTrainings["mooc_ia"]}
               onToggle={() => handleToggleTraining("mooc_ia")}
             />
