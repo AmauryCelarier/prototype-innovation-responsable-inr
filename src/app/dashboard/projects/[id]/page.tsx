@@ -123,9 +123,22 @@ export default function ProjectSummaryPage() {
     ? `${(step4Filled.reduce((sum, item) => sum + (item.score ?? 0), 0) / step4Filled.length).toFixed(1)}/5`
     : 'N/A';
 
-  // Étape 3 : Impact Carbone & Collab
+  // Étape 3 : Impact Carbone & Collab & ACV
   const carbonImpact = project.wenr_carbon_impact;
   const collaborators = project.collaborator_count;
+  
+  // Extraction des scores ACV (step_id = 3)
+  const acvScores = responses
+    .filter(r => r.step_id === 3)
+    .reduce((acc, r) => ({
+      ...acc,
+      [r.question_id]: r.score
+    }), {} as Record<string, string | number>);
+  
+  const acvGlobal = acvScores['acv_score_global'] ?? 'N/A';
+  const acvTerminaux = acvScores['acv_terminaux'] ?? 'N/A';
+  const acvReseau = acvScores['acv_reseau'] ?? 'N/A';
+  const acvDatacenter = acvScores['acv_datacenter'] ?? 'N/A';
 
   return (
     <div className="p-4 md:p-12 max-w-6xl mx-auto min-h-screen bg-[#F8FAFC] text-slate-900">
@@ -169,7 +182,7 @@ export default function ProjectSummaryPage() {
             </div>
           </section>
 
-          {/* ÉTAPE 3 : IMPACT CARBONE RAPIDE */}
+          {/* ÉTAPE 3 : IMPACT CARBONE & ACV */}
           <section className="bg-emerald-900 text-emerald-50 p-8 rounded-[2.5rem] shadow-xl">
             <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400 mb-6">Impact IT (Étape 3)</h2>
             <div className="space-y-6">
@@ -181,6 +194,29 @@ export default function ProjectSummaryPage() {
                 <span className="text-xs font-bold uppercase opacity-60">Collaborateurs</span>
                 <span className="text-2xl font-black italic">{collaborators ?? 'N/A'}</span>
               </div>
+              {acvGlobal !== 'N/A' && (
+                <div className="pt-6 border-t border-emerald-700/50">
+                  <p className="text-[10px] uppercase opacity-60 mb-4 font-bold">ACV ADEME</p>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs opacity-70">Score Global</span>
+                      <span className="font-black">{acvGlobal} <small className="text-[10px]">/100</small></span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs opacity-70">Terminaux</span>
+                      <span className="font-black">{acvTerminaux} <small className="text-[10px]">%</small></span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs opacity-70">Réseau</span>
+                      <span className="font-black">{acvReseau} <small className="text-[10px]">%</small></span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs opacity-70">Data Center</span>
+                      <span className="font-black">{acvDatacenter} <small className="text-[10px]">%</small></span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </section>
 
