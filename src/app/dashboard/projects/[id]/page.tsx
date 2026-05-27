@@ -166,10 +166,6 @@ export default function ProjectSummaryPage() {
       };
     });
 
-  const step1Score = step1Data.length > 0
-    ? `${(step1Data.reduce((sum, item) => sum + item.A, 0) / step1Data.length).toFixed(1)}/4`
-    : 'N/A';
-
   // Étape 2 : Actions réalisées
   const TRAINING_DEFINITIONS: Record<string, { title: string; description: string }> = {
     mooc_nr_fondamentaux: {
@@ -227,10 +223,27 @@ export default function ProjectSummaryPage() {
       [r.question_id]: r.score
     }), {} as Record<string, string | number>);
   
-  const acvGlobal = acvScores['acv_score_global'] ?? 'N/A';
-  const acvTerminaux = acvScores['acv_terminaux'] ?? 'N/A';
-  const acvReseau = acvScores['acv_reseau'] ?? 'N/A';
-  const acvDatacenter = acvScores['acv_datacenter'] ?? 'N/A';
+  const HIDDEN_ACV_KEYS = ['acv_score_global', 'acv_terminaux', 'acv_reseau', 'acv_datacenter'];
+  const acvEntries = Object.entries(acvScores).filter(([qid]) => !HIDDEN_ACV_KEYS.includes(qid));
+
+  const humanize = (qid: string) => {
+    return qid.replace(/^acv_?/i, '')
+      .replace(/_/g, ' ')
+      .split(' ')
+      .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+      .join(' ');
+  };
+
+  const unitFor = (qid: string) => {
+    const map: Record<string, string> = {
+      acv_changement_climatique: 'kg CO₂ eq',
+      acv_acidification: 'mol H⁺ eq',
+      acv_particules_fines: 'kg PM2.5 eq',
+      acv_radiations_ionisantes: 'kBq U-235 eq',
+      acv_ressources_naturelles: 'kg Sb eq'
+    };
+    return map[qid] ?? '';
+  };
 
   return (
     <div className="p-4 md:p-12 max-w-6xl mx-auto min-h-screen bg-[#F8FAFC] text-slate-900">
@@ -395,10 +408,6 @@ export default function ProjectSummaryPage() {
                   <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 mb-2">Étape 01</h2>
                   <h3 className="text-3xl font-black uppercase italic tracking-tighter">Vision Stratégique</h3>
                 </div>
-                <div className="bg-slate-50 px-6 py-3 rounded-2xl border-2 border-slate-100">
-                  <p className="text-[10px] font-black uppercase text-slate-400 text-center">Score Global</p>
-                  <p className="text-2xl font-black text-slate-900">{step1Score}</p>
-                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
@@ -481,26 +490,16 @@ export default function ProjectSummaryPage() {
                 <span className="text-xs font-bold uppercase opacity-60">Collaborateurs</span>
                 <span className="text-2xl font-black italic">{collaborators ?? 'N/A'}</span>
               </div>
-              {acvGlobal !== 'N/A' && (
+              {acvEntries.length > 0 && (
                 <div className="pt-6 border-t border-emerald-700/50">
                   <p className="text-[10px] uppercase opacity-60 mb-4 font-bold">ACV ADEME</p>
                   <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs opacity-70">Score Global</span>
-                      <span className="font-black">{acvGlobal} <small className="text-[10px]">/100</small></span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs opacity-70">Terminaux</span>
-                      <span className="font-black">{acvTerminaux} <small className="text-[10px]">%</small></span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs opacity-70">Réseau</span>
-                      <span className="font-black">{acvReseau} <small className="text-[10px]">%</small></span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs opacity-70">Data Center</span>
-                      <span className="font-black">{acvDatacenter} <small className="text-[10px]">%</small></span>
-                    </div>
+                    {acvEntries.map(([qid, val]) => (
+                      <div key={qid} className="flex justify-between items-center">
+                        <span className="text-xs opacity-70">{humanize(qid)}</span>
+                        <span className="font-black">{val} <small className="text-[10px]">{unitFor(qid)}</small></span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}

@@ -172,8 +172,14 @@ export default function Etape3Page() {
           <div className="flex items-center gap-4 mb-6">
             <div className="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center text-white font-bold">1</div>
             <div>
-              <h2 className="text-xl font-black uppercase tracking-tight">Empreinte SI (WeNR Light)</h2>
-              <p className="text-sm text-slate-500">Mesure physique globale (Carbone).</p>
+              <h2 className="text-xl font-black uppercase tracking-tight">Empreinte SI</h2>
+              <p className="text-sm text-slate-500">Mesure physique globale.</p>
+            </div>
+            <div className="flex items-center gap-2 font-['Inter',_sans-serif]">
+              <img src="/logo_nr.png" alt="WeNR logo" className="w-16 h-auto" />
+              <div className="text-[24px] font-extrabold text-[#2F2E83] leading-none uppercase tracking-[-0.05em] scale-y-[1.0]">
+                WeNR<br/>Light
+              </div>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -203,6 +209,7 @@ export default function Etape3Page() {
                 <h2 className="text-xl font-black uppercase tracking-tight">Impact Service (MonACV)</h2>
                 <p className="text-sm text-slate-500">Renseignez les 5 indicateurs environnementaux issus de votre rapport MonACV Numérique.</p>
               </div>
+
             </div>
             <button onClick={() => window.open('https://monacvnumerique.fr/', '_blank')} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-[10px] font-bold uppercase">Lancer MonACV ↗</button>
           </div>
