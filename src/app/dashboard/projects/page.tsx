@@ -89,12 +89,14 @@ export default function ProjectsPage() {
               : 'Gérez vos diagnostics et fiches récapitulatives'}
           </p>
         </div>
-        <Link
-          href="/dashboard/projects/new"
-          className="bg-blue-600 text-white px-6 py-3 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-blue-700 transition-all shadow-lg hover:shadow-blue-200"
-        >
-          + Nouveau Service
-        </Link>
+        {role !== 'user_accompagnateur' && (
+          <Link
+            href="/dashboard/projects/new"
+            className="bg-blue-600 text-white px-6 py-3 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-blue-700 transition-all shadow-lg hover:shadow-blue-200"
+          >
+            + Nouveau Service
+          </Link>
+        )}
       </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -105,15 +107,17 @@ export default function ProjectsPage() {
                   <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest">
                     {p.domaine || 'Général'}
                   </span>
-                  <button 
-                    onClick={() => handleDelete(p.id, p.nom_projet)}
-                    className="text-slate-300 hover:text-red-500 transition-colors"
-                    title="Supprimer le service"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
+                  {role !== 'user_accompagnateur' && (
+                    <button 
+                      onClick={() => handleDelete(p.id, p.nom_projet)}
+                      className="text-slate-300 hover:text-red-500 transition-colors"
+                      title="Supprimer le service"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  )}
                 </div>
                 
                 <h2 className="text-2xl font-black mb-2 text-slate-800 leading-tight">{p.nom_projet}</h2>
@@ -121,16 +125,18 @@ export default function ProjectsPage() {
               </div>
 
               <div className="space-y-3">
-                <Link 
-                  href={`/dashboard/etape-1?projectId=${p.id}`}
-                  className="block w-full text-center bg-slate-900 text-white p-4 rounded-2xl font-bold text-sm hover:bg-blue-600 transition-all"
-                >
-                  Continuer le diagnostic
-                </Link>
+                {role !== 'user_accompagnateur' && (
+                  <Link 
+                    href={`/dashboard/etape-1?projectId=${p.id}`}
+                    className="block w-full text-center bg-slate-900 text-white p-4 rounded-2xl font-bold text-sm hover:bg-blue-600 transition-all"
+                  >
+                    Continuer le diagnostic
+                  </Link>
+                )}
                 
                 <Link 
                   href={`/dashboard/projects/${p.id}`} 
-                  className="block w-full text-center border-2 border-slate-100 text-slate-600 p-4 rounded-2xl font-bold text-sm hover:border-blue-600 hover:text-blue-600 transition-all"
+                  className={`block w-full text-center border-2 border-slate-100 text-slate-600 p-4 rounded-2xl font-bold text-sm hover:border-blue-600 hover:text-blue-600 transition-all ${role === 'user_accompagnateur' ? 'bg-blue-50' : ''}`}
                 >
                   Voir la fiche récapitulative
                 </Link>
