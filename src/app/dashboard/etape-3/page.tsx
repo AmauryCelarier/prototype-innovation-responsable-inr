@@ -5,10 +5,36 @@ import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 
 const ACV_INDICATORS = [
-  { id: 'acv_score_global', label: 'Score Global de Performance', desc: 'Note globale obtenue sur MonACV (sur 100).', unit: '/100' },
-  { id: 'acv_terminaux', label: 'Impact Terminaux (Utilisateurs)', desc: 'Part de l\'impact liée à la fabrication et l\'usage des appareils.', unit: '%' },
-  { id: 'acv_reseau', label: 'Impact Réseau (Transport)', desc: 'Part de l\'impact liée aux infrastructures réseau et télécoms.', unit: '%' },
-  { id: 'acv_datacenter', label: 'Impact Centre de Données', desc: 'Part de l\'impact liée à l\'hébergement et au stockage.', unit: '%' }
+  {
+    id: 'acv_changement_climatique',
+    label: 'Changement Climatique',
+    desc: 'Émissions de gaz à effet de serre liées au service numérique.',
+    unit: 'kg CO₂ eq'
+  },
+  {
+    id: 'acv_acidification',
+    label: 'Acidification',
+    desc: 'Émissions contribuant à l\'acidification des sols et des eaux.',
+    unit: 'mol H⁺ eq'
+  },
+  {
+    id: 'acv_particules_fines',
+    label: 'Émissions de Particules Fines',
+    desc: 'Particules fines émises, impactant la qualité de l\'air.',
+    unit: 'kg PM2.5 eq'
+  },
+  {
+    id: 'acv_radiations_ionisantes',
+    label: 'Radiations Ionisantes',
+    desc: 'Exposition aux radiations liée à la production d\'énergie nucléaire.',
+    unit: 'kBq U-235 eq'
+  },
+  {
+    id: 'acv_ressources_naturelles',
+    label: 'Épuisement des Ressources Naturelles',
+    desc: 'Consommation de ressources abiotiques (métaux, minéraux, énergie fossile).',
+    unit: 'kg Sb eq'
+  },
 ];
 
 export default function Etape3Page() {
@@ -46,7 +72,7 @@ export default function Etape3Page() {
 
       if (respData) {
         const formatted = respData.reduce((acc, curr) => ({
-          ...acc, 
+          ...acc,
           [curr.question_id]: curr.score || ''
         }), {});
         setAcvValues(formatted);
@@ -68,7 +94,7 @@ export default function Etape3Page() {
           wenr_carbon_impact: parseFloat(carbonImpact.toString()) || 0,
           collaborator_count: parseInt(collaborators.toString()) || 0,
       }).eq('id', projectId);
-      
+
       if (pError) throw pError;
 
       // B. Récupération User
@@ -77,13 +103,12 @@ export default function Etape3Page() {
       if (!userId) throw new Error("Utilisateur non authentifié");
 
       // C. Sauvegarde ACV
-      // On filtre pour ne pas envoyer d'entrées vides et on sécurise les valeurs
       const acvEntries = Object.entries(acvValues)
-        .filter(([_, val]) => val !== undefined && val !== '') 
+        .filter(([, val]) => val !== undefined && val !== '')
         .map(([qId, val]) => ({
           project_id: parseInt(projectId),
           step_id: 3,
-          question_id: qId, // Maintenant accepté comme texte grâce au SQL ci-dessus
+          question_id: qId,
           category: 'ACV_ADEME',
           score: val.toString(),
           user_id: userId
@@ -92,16 +117,16 @@ export default function Etape3Page() {
       if (acvEntries.length > 0) {
         const { error: rError } = await supabase
           .from('responses')
-          .upsert(acvEntries, { 
-            onConflict: 'project_id,step_id,question_id' 
+          .upsert(acvEntries, {
+            onConflict: 'project_id,step_id,question_id'
           });
         if (rError) throw rError;
       }
 
       setMessage('Données d\'impact enregistrées !');
       setTimeout(() => setMessage(''), 3000);
+        
     } catch (error: any) {
-      // Si l'erreur est encore {}, on inspecte l'objet complet
       console.error("Détails complets de l'erreur:", error);
       setMessage(error.details || error.message || 'Erreur de base de données');
     } finally {
@@ -176,7 +201,7 @@ export default function Etape3Page() {
               <div className="w-12 h-12 bg-blue-500 rounded-2xl flex items-center justify-center text-white font-bold">2</div>
               <div>
                 <h2 className="text-xl font-black uppercase tracking-tight">Impact Service (MonACV)</h2>
-                <p className="text-sm text-slate-500">Effectuez  l&apos;Analyse de Cycle de Vie de votre service numérique pour quantifier ses  impacts environnementaux  tout au long de son cycle de vie.</p>
+                <p className="text-sm text-slate-500">Renseignez les 5 indicateurs environnementaux issus de votre rapport MonACV Numérique.</p>
               </div>
             </div>
             <button onClick={() => window.open('https://monacvnumerique.fr/', '_blank')} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-[10px] font-bold uppercase">Lancer MonACV ↗</button>
@@ -189,15 +214,15 @@ export default function Etape3Page() {
                   <h4 className="font-black text-slate-800 uppercase text-sm">{ind.label}</h4>
                   <p className="text-xs text-slate-500">{ind.desc}</p>
                 </div>
-                <div className="relative">
+                <div className="flex items-center gap-3">
                   <input
                     type="text"
                     value={acvValues[ind.id] || ''}
                     onChange={(e) => setAcvValues({ ...acvValues, [ind.id]: e.target.value })}
-                    className="w-24 p-3 rounded-xl border-none shadow-inner font-black text-center text-blue-600"
+                    className="w-28 p-3 rounded-xl border-none shadow-inner font-black text-center text-blue-600"
                     placeholder="0"
                   />
-                  <span className="absolute -right-8 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">{ind.unit}</span>
+                  <span className="font-bold text-slate-400 text-xs whitespace-nowrap">{ind.unit}</span>
                 </div>
               </div>
             ))}
