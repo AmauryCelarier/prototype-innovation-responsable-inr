@@ -43,6 +43,7 @@ export default function AuthPage() {
           first_name: firstName,
           last_name: lastName,
           address: address,
+          email: authData.user.email,
           role: 'user_startup',
         },
       ]);

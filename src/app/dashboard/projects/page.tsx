@@ -6,11 +6,40 @@ import Link from 'next/link';
 export default function ProjectsPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [projects, setProjects] = useState<any[]>([]);
+  const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadProjects() {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
+        // Récupère le profil pour connaître le rôle
+        const { data: profileData } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+        const userRole = profileData?.role ?? 'user_startup';
+        setRole(userRole);
+
+        // Si l'utilisateur est accompagnateur, on récupère les projets dont il est référent/accompagnateur
+        if (userRole === 'user_accompagnateur') {
+          // Essayer une requête côté serveur si la colonne existe, sinon fallback sur récupération complète puis filtrage
+          const { data: accompagnateurProjects, error: accompError } = await supabase
+            .from('projects')
+            .select('*')
+            .eq('accompagnateur_id', user.id);
+
+          if (!accompError && accompagnateurProjects) {
+            setProjects(accompagnateurProjects);
+            return;
+          }
+
+          // Fallback: récupérer tous les projets et filtrer côté client si la colonne n'existe pas
+          const { data: allProjects } = await supabase.from('projects').select('*');
+          if (allProjects) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            setProjects(allProjects.filter((p: any) => p.accompagnateur_id === user.id));
+          }
+          return;
+        }
+
+        // Utilisateur startup : projets dont il est propriétaire
         const { data } = await supabase
           .from('projects')
           .select('*')
@@ -51,8 +80,14 @@ export default function ProjectsPage() {
     <div className="p-8 max-w-5xl mx-auto min-h-screen">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-black text-slate-800 uppercase italic tracking-tighter">Mes Services</h1>
-          <p className="text-slate-500 text-sm">Gérez vos diagnostics et fiches récapitulatives</p>
+          <h1 className="text-3xl font-black text-slate-800 uppercase italic tracking-tighter">
+            {role === 'user_accompagnateur' ? 'Services accompagnés' : 'Mes Services'}
+          </h1>
+          <p className="text-slate-500 text-sm">
+            {role === 'user_accompagnateur'
+              ? 'Accédez aux fiches récapitulatives des services dont vous êtes responsable.'
+              : 'Gérez vos diagnostics et fiches récapitulatives'}
+          </p>
         </div>
         <Link
           href="/dashboard/projects/new"
