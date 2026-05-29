@@ -110,7 +110,7 @@ export default function Etape2Page() {
             {/* MILIEU : TITRE + RETOUR DASHBOARD */}
             <div className="flex flex-col items-center gap-1">
             <h1 className="text-lg font-black text-slate-800 tracking-tight uppercase">
-                Étape 2 : Ressources Humaines
+                Étape 2 : Acculturation NR
             </h1>
             <Link
                 href="/dashboard/projects"
@@ -147,7 +147,7 @@ export default function Etape2Page() {
         {isCritical ? (
           <div className="bg-amber-50 border-l-4 border-amber-500 p-6 rounded-r-2xl mb-10 shadow-sm animate-in fade-in slide-in-from-top-4">
             <h2 className="text-amber-800 font-black uppercase text-sm tracking-widest">Sensibilisation et acculturation insuffisante ({dim6Score.toFixed(1)}/4)</h2>
-            <p className="text-amber-700 text-sm mt-1">Le référentiel impose la validation des formations ci-dessous pour poursuivre.</p>
+            <p className="text-amber-700 text-sm mt-1">Nous vous recommandons de suivre les formations ci-dessous.</p>
           </div>
         ) : (
           <div className="bg-emerald-50 border-l-4 border-emerald-500 p-6 rounded-r-2xl mb-10 shadow-sm">

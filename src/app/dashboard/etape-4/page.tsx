@@ -101,7 +101,7 @@ export default function Etape4Souverainete() {
             </Link>
             </div>
           <div className="flex flex-col items-center text-center">
-            <h1 className="text-lg font-black text-slate-800 tracking-tight uppercase">Étape 4 : Souveraineté & Robustesse</h1>
+            <h1 className="text-lg font-black text-slate-800 tracking-tight uppercase">Étape 4 : Accessibilité numérique </h1>
             <Link
                 href="/dashboard/projects"
                 className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-colors"
@@ -130,76 +130,63 @@ export default function Etape4Souverainete() {
       </div>
 
       {/* CONTENU */}
-      <div className="max-w-4xl mx-auto px-6 mt-12 space-y-10">
-        <div className="bg-blue-900 text-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+      <div className="max-w-3xl mx-auto p-8">
+        <div className="bg-violet-900 text-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden mb-12">
           <div className="relative z-10">
-            <h2 className="text-2xl font-black uppercase italic mb-2 tracking-tight text-white">Scoring de Souveraineté Numérique</h2>
-            <p className="text-blue-200 text-sm font-medium leading-relaxed max-w-xl">
-              Évaluez votre dépendance technologique. L&apos;indépendance stratégique est le premier pilier de la robustesse organisationnelle.
+            <h2 className="text-2xl font-black uppercase italic mb-2 tracking-tight text-white">La conformité à l'accessibilité</h2>
+            <p className="text-violet-200 text-sm font-medium leading-relaxed max-w-xl">
+              La mise en conformité de votre projet numérique au Référentiel Général d'Amélioration de l'Accessibilité (RGAA) est une obligation légale.
             </p>
+            <p className="text-violet-200 text-sm font-medium leading-relaxed max-w-xl">Pour cela, voici quelques outils utiles vous permettant de réaliser vos audits d'accessibilité numérique :</p>
           </div>
-          <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-blue-800 rounded-full opacity-50 blur-3xl"></div>
+          <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-violet-800 rounded-full opacity-50 blur-3xl"></div>
         </div>
-
-        {SOUVERAINETE_REF.map((item) => (
-          <div key={item.id} className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100 relative group transition-all hover:shadow-md">
-            <div className="flex items-center gap-4 mb-4">
-              <div>
-                <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">{item.titre}</h3>
-                <p className="text-blue-600 text-[10px] font-black uppercase tracking-[0.2em]">{item.question}</p>
-              </div>
-            </div>
-
-            <p className="text-slate-500 text-sm mb-8 font-medium leading-relaxed">
-              {item.description}
-            </p>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              {[0, 1, 3, 5].map((val) => (
-                <button
-                  key={val}
-                  onClick={() => setReponses({ ...reponses, [item.id]: val })}
-                  className={`p-5 rounded-3xl border-2 transition-all flex flex-col items-center gap-2 ${
-                    reponses[item.id] === val
-                      ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-lg scale-105'
-                      : 'border-slate-50 bg-slate-50 text-slate-400 hover:border-slate-200'
-                  }`}
-                >
-                  <span className="text-3xl font-black">{val}</span>
-                  <span className="text-[8px] font-black uppercase tracking-widest text-center leading-none opacity-70">
-                    {val === 0 ? 'Critique' : val === 1 ? 'Fragile' : val === 3 ? 'Robuste' : 'Souverain'}
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            {reponses[item.id] !== undefined && (
-              <div className="bg-slate-900 text-white p-6 rounded-[2rem] border-l-8 border-blue-500">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-[10px] font-bold text-white">!</div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-blue-400">Impact & Recommandation</p>
-                </div>
-                <p className="text-sm font-bold leading-relaxed text-slate-100">
-                  {item.recommandations[reponses[item.id] as keyof typeof item.recommandations]}
-                </p>
-              </div>
-            )}
-          </div>
-        ))}
-
-        {/* ACTIONS FIXES */}
-        <div className="sticky bottom-8 z-40 px-4">
-          <div className="max-w-md mx-auto bg-white/90 backdrop-blur-xl p-4 rounded-[2.5rem] shadow-2xl border border-white flex flex-col items-center gap-4">
-            {message && <p className="font-black text-blue-600 text-[10px] uppercase tracking-widest animate-pulse">{message}</p>}
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="w-full bg-blue-600 text-white py-5 rounded-[1.8rem] font-black uppercase tracking-[0.2em] shadow-xl hover:bg-slate-900 transition-all active:scale-95 disabled:opacity-50"
-            >
-              {saving ? 'Analyse en cours...' : 'Valider mon Scoring'}
-            </button>
-          </div>
+        
+        {/* TABLEAU DES RESSOURCES */}
+        <div className="bg-white rounded-[1.5rem] shadow-md border border-slate-100 overflow-hidden">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-gradient-to-r from-violet-50 to-violet-100 border-b-2 border-violet-200">
+                <th className="px-6 py-4 text-left text-sm font-black text-violet-900 uppercase tracking-tight">Type de ressources</th>
+                <th className="px-6 py-4 text-left text-sm font-black text-violet-900 uppercase tracking-tight">Lien</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-slate-100 hover:bg-violet-50 transition-colors">
+                <td className="px-6 py-4 text-sm font-medium text-slate-700">Outils de création pour rendre l'information et la communication accessibles</td>
+                <td className="px-6 py-4 text-sm">
+                  <a href="https://www.info.gouv.fr/accessibilite/outils-de-creation-pour-rendre-linformation-et-la-communication-accessibles" target="_blank" rel="noopener noreferrer" className="text-violet-600 hover:text-violet-800 font-semibold underline underline-offset-2 hover:no-underline">https://www.info.gouv.fr/accessibilite/outils-de-creation-pour-rendre-linformation-et-la-communication-accessibles</a>
+                </td>
+              </tr>
+              <tr className="border-b border-slate-100 hover:bg-violet-50 transition-colors">
+                <td className="px-6 py-4 text-sm font-medium text-slate-700">Outils de création pour rendre vos applications mobiles accessibles</td>
+                <td className="px-6 py-4 text-sm space-y-2">
+                  <div>
+                    <a href="https://www.info.gouv.fr/accessibilite/applications-mobiles/guide-daudit-daccessibilite-des-applications-mobiles" target="_blank" rel="noopener noreferrer" className="text-violet-600 hover:text-violet-800 font-semibold underline underline-offset-2 hover:no-underline block">https://www.info.gouv.fr/accessibilite/applications-mobiles/guide-daudit-daccessibilite-des-applications-mobiles</a>
+                  </div>
+                  <div>
+                    <a href="https://accessibilityinsights.io/" target="_blank" rel="noopener noreferrer" className="text-violet-600 hover:text-violet-800 font-semibold underline underline-offset-2 hover:no-underline block">https://accessibilityinsights.io/</a>
+                  </div>
+                </td>
+              </tr>
+              <tr className="hover:bg-violet-50 transition-colors">
+                <td className="px-6 py-4 text-sm font-medium text-slate-700">Outils de création pour rendre vos sites</td>
+                <td className="px-6 py-4 text-sm space-y-2">
+                  <div className="flex items-center gap-2">
+                    <a href="https://ara.numerique.gouv.fr/" target="_blank" rel="noopener noreferrer" className="text-violet-600 hover:text-violet-800 font-semibold underline underline-offset-2 hover:no-underline">https://ara.numerique.gouv.fr/</a>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <a href="https://kastor.green/" target="_blank" rel="noopener noreferrer" className="text-violet-600 hover:text-violet-800 font-semibold underline underline-offset-2 hover:no-underline">https://kastor.green/</a>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <a href="https://my.tanaguru.com/#/external-module/Home" target="_blank" rel="noopener noreferrer" className="text-violet-600 hover:text-violet-800 font-semibold underline underline-offset-2 hover:no-underline">https://my.tanaguru.com/#/external-module/Home</a>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+        
       </div>
     </div>
   );

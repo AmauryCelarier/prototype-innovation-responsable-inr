@@ -445,7 +445,7 @@ export default function ProjectSummaryPage() {
               <div className="flex justify-between items-start mb-8">
                 <div>
                   <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 mb-2">Étape 02</h2>
-                  <h3 className="text-3xl font-black uppercase italic tracking-tighter">Ressources Humaines</h3>
+                  <h3 className="text-3xl font-black uppercase italic tracking-tighter">Acculturation NR</h3>
                 </div>
                 <div className="bg-slate-50 px-6 py-3 rounded-2xl">
                   <p className="text-[10px] font-black uppercase text-slate-400 text-center">Formations validées</p>
@@ -543,7 +543,7 @@ export default function ProjectSummaryPage() {
                 <div>
                   <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600 mb-2">Étape 05</h2>
                   <h3 className="text-3xl font-black uppercase italic tracking-tighter">Chartes signées</h3>
-                  <p className="text-sm text-slate-600">Validez les chartes que le service a signées.</p>
+                  <p className="text-sm text-slate-600">Validez les chartes signées.</p>
                 </div>
                 {!editingCharters && (
                   <button

@@ -92,18 +92,34 @@ export default function NewProjectPage() {
   return (
     <div className="p-8 max-w-3xl mx-auto bg-slate-50 min-h-screen">
       <h1 className="text-3xl font-black mb-8 text-slate-800 uppercase tracking-tighter italic">
-        Nouveau service
+        Nouveau projet numérique
       </h1>
       
       <form onSubmit={handleSubmit} className="space-y-8 bg-white p-10 rounded-[2.5rem] shadow-xl border border-slate-100">
         
-        {/* QUALIFICATION */}
+{/* QUALIFICATION */}
         <div className="space-y-6 p-6 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
-          <h2 className="text-sm font-black uppercase tracking-widest text-emerald-600">Qualification de l&apos;approche</h2>
           
           <div className="space-y-4">
             <div className="flex flex-col gap-3">
-              <p className="text-sm font-bold text-slate-700">Réduire l&apos;impact environnemental du service lui-même ?</p>
+              <p className="text-sm font-bold text-slate-700">Est-ce que votre projet est un service ou une application numérique ?</p>
+              <div className="flex gap-2">
+                  <button key={`q1-${null}`} type="button" onClick={() => setQAnswers({...qAnswers, reduit_empreinte_it: null})}
+                    className={`px-6 py-2 rounded-xl font-bold transition-all ${qAnswers.reduit_empreinte_it === null ? 'bg-gray-500 text-white' : 'bg-white border-2 text-slate-400'}`}>
+                      
+                  </button>
+              </div>
+            </div>
+        </div>
+        </div>
+
+        {/* QUALIFICATION */}
+        <div className="space-y-6 p-6 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
+          <h2 className="text-sm font-black uppercase tracking-widest text-emerald-600">Quelle est la nature de votre projet numérique ?</h2>
+          
+          <div className="space-y-4">
+            <div className="flex flex-col gap-3">
+              <p className="text-sm font-bold text-slate-700">Est-ce que votre projet numérique vise à réduire l'empreinte environnementale du numérique ?</p>
               <div className="flex gap-2">
                 {[true, false].map((val) => (
                   <button key={`q1-${val}`} type="button" onClick={() => setQAnswers({...qAnswers, reduit_empreinte_it: val})}
@@ -115,7 +131,7 @@ export default function NewProjectPage() {
             </div>
 
             <div className="flex flex-col gap-3">
-              <p className="text-sm font-bold text-slate-700">Aider un autre secteur à réduire son impact ?</p>
+              <p className="text-sm font-bold text-slate-700">Est-ce que votre projet numérique vise à réduire l'empreinte environnementale d'un secteur identifié ?</p>
               <div className="flex gap-2">
                 {[true, false].map((val) => (
                   <button key={`q2-${val}`} type="button" onClick={() => setQAnswers({...qAnswers, aide_transition_metier: val})}
@@ -160,9 +176,9 @@ export default function NewProjectPage() {
             <textarea placeholder="Objectif environnemental" className="w-full p-4 border-2 border-slate-100 rounded-2xl text-black border-l-4 border-l-emerald-400"
             onChange={(e) => setFormData({...formData, environmental_objectifs: e.target.value})} />
 
-            <textarea placeholder="Cible du service" className="w-full p-4 border-2 border-slate-100 rounded-2xl text-black border-l-4"
+            <textarea placeholder="Cibles du service" className="w-full p-4 border-2 border-slate-100 rounded-2xl text-black border-l-4"
               onChange={(e) => setFormData({...formData, cible_service: e.target.value})} />
-            <textarea placeholder="Problématique à résoudre" className="w-full p-4 border-2 border-slate-100 rounded-2xl text-black border-l-4"
+            <textarea placeholder="Problématiques à résoudre" className="w-full p-4 border-2 border-slate-100 rounded-2xl text-black border-l-4"
               onChange={(e) => setFormData({...formData, problematique: e.target.value})} />
           </div>
         </div>
@@ -173,25 +189,20 @@ export default function NewProjectPage() {
           <div className="grid grid-cols-2 gap-4">
             <input placeholder="Nom du référent" type="text" className="p-4 border-2 border-slate-100 rounded-2xl text-black"
               onChange={(e) => setFormData({...formData, referent_nom: e.target.value})} />
-            <select className="p-4 border-2 border-slate-100 rounded-2xl text-black"
-              onChange={(e) => setFormData({...formData, referent_profil: e.target.value})}>
-              <option value="">Profil du référent</option>
-              <option value="Dev">Développeur</option>
-              <option value="RSE">Responsable RSE</option>
-              <option value="Produit">Product Owner</option>
-            </select>
+              <input placeholder="Rôle du référent" type="text" className="p-4 border-2 border-slate-100 rounded-2xl text-black"
+              onChange={(e) => setFormData({...formData, referent_profil: e.target.value})} />
           </div>
         </div>
 
         {/* 3. LIVRABLES & COÛTS */}
         <div className="space-y-4">
           <h2 className="text-sm font-black uppercase text-blue-600">3. Livrables & Coûts</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <input placeholder="Livrables attendus" type="text" className="p-4 border-2 border-slate-100 rounded-2xl text-black"
+          <div className="grid gap-4">
+            <textarea placeholder="Livrables attendus" className="w-full p-4 border-2 border-slate-100 rounded-2xl text-black border-l-4"
               onChange={(e) => setFormData({...formData, livrables_attendus: e.target.value})} />
-            <input placeholder="Coûts estimés (€)" type="text" className="p-4 border-2 border-slate-100 rounded-2xl text-black"
-              onChange={(e) => setFormData({...formData, couts: e.target.value})} />
           </div>
+          <input placeholder="Coûts estimés (€)" type="text" className="p-4 border-2 border-slate-100 rounded-2xl text-black"
+              onChange={(e) => setFormData({...formData, couts: e.target.value})} />
         </div>
 
         {/* 4. ENTREPRISE */}
@@ -217,7 +228,7 @@ export default function NewProjectPage() {
 
         <button type="submit" disabled={!currentTypeApproche}
           className="w-full bg-slate-900 text-white p-6 rounded-[1.8rem] font-black uppercase hover:bg-blue-600 transition-all disabled:opacity-50">
-          Créer le service et passer au diagnostic
+          Créer le projet numérique et passer au diagnostic
         </button>
       </form>
     </div>
