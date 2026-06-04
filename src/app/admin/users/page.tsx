@@ -59,7 +59,7 @@ export default function AdminUsersPage() {
   };
 
   const deleteProject = async (projectId: string) => {
-    if (!confirm('Supprimer ce service ? Cette action est irréversible.')) {
+    if (!confirm('Supprimer ce Projet ? Cette action est irréversible.')) {
       return;
     }
 
@@ -140,27 +140,27 @@ export default function AdminUsersPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-black mb-4 text-black">Affecter un service à un accompagnateur</h2>
+            <h2 className="text-2xl font-black mb-4 text-black">Affecter un projet à un accompagnateur</h2>
             <div className="space-y-4 mb-4">
               <div>
-                <label className="block text-sm font-semibold text-black mb-2">Rechercher un service par nom</label>
+                <label className="block text-sm font-semibold text-black mb-2">Rechercher un projet par nom</label>
                 <input
                   type="text"
                   value={searchService}
                   onChange={(e) => setSearchService(e.target.value)}
-                  placeholder="Nom du service"
+                  placeholder="Nom du projet"
                   className="w-full p-3 border rounded-lg text-black"
                 />
               </div>
             </div>
             <div className="max-h-[520px] overflow-y-auto space-y-4 p-3 bg-slate-50 rounded-3xl border border-slate-200">
               {filteredProjects.length === 0 && (
-                <p className="text-sm text-black/70">Aucun service trouvé.</p>
+                <p className="text-sm text-black/70">Aucun projet trouvé.</p>
               )}
               {filteredProjects.map((project) => (
                 <div key={project.id} className="flex flex-col md:flex-row md:items-center md:justify-between bg-white p-4 rounded-xl border">
                   <div className="mb-3 md:mb-0">
-                    <div className="font-bold text-black">{project.nom_projet || 'Service sans nom'}</div>
+                    <div className="font-bold text-black">{project.nom_projet || 'Projet sans nom'}</div>
                     <div className="text-sm text-black">{project.domaine || 'Domaine non défini'}</div>
                     <div className="text-sm text-black">Assigné à : {project.accompagnateur_id ? getAccompagnateurName(project.accompagnateur_id) : 'Aucun'}</div>
                   </div>

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 export default function NewProjectPage() {
   const router = useRouter();
   const [isEntreprise, setIsEntreprise] = useState(false);
+  const [projectType, setProjectType] = useState<'service' | 'application' | ''>('');
   
   // 1. État pour les questions
   const [qAnswers, setQAnswers] = useState({
@@ -44,6 +45,11 @@ export default function NewProjectPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!projectType) {
+      alert("Veuillez indiquer si votre projet est un service ou une application numérique.");
+      return;
+    }
+
     if (qAnswers.reduit_empreinte_it === null || qAnswers.aide_transition_metier === null) {
       alert("Veuillez répondre aux questions de qualification.");
       return;
@@ -55,6 +61,7 @@ export default function NewProjectPage() {
     const projectPayload = {
       user_id: user?.id,
       type_approche: currentTypeApproche,
+      project_type: projectType,
       nom_projet: formData.nom_projet,
       description: formData.description,
       domaine: formData.domaine_applicatif, 
@@ -104,13 +111,19 @@ export default function NewProjectPage() {
             <div className="flex flex-col gap-3">
               <p className="text-sm font-bold text-slate-700">Est-ce que votre projet est un service ou une application numérique ?</p>
               <div className="flex gap-2">
-                  <button key={`q1-${null}`} type="button" onClick={() => setQAnswers({...qAnswers, reduit_empreinte_it: null})}
-                    className={`px-6 py-2 rounded-xl font-bold transition-all ${qAnswers.reduit_empreinte_it === null ? 'bg-gray-500 text-white' : 'bg-white border-2 text-slate-400'}`}>
-                      
+                {['service', 'application'].map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => setProjectType(type as 'service' | 'application')}
+                    className={`px-6 py-2 rounded-xl font-bold transition-all ${projectType === type ? 'bg-slate-900 text-white' : 'bg-white border-2 border-slate-200 text-slate-500 hover:border-slate-400'}`}
+                  >
+                    {type === 'service' ? 'Service' : 'Application numérique'}
                   </button>
+                ))}
               </div>
             </div>
-        </div>
+          </div>
         </div>
 
         {/* QUALIFICATION */}
@@ -119,7 +132,7 @@ export default function NewProjectPage() {
           
           <div className="space-y-4">
             <div className="flex flex-col gap-3">
-              <p className="text-sm font-bold text-slate-700">Est-ce que votre projet numérique vise à réduire l'empreinte environnementale du numérique ?</p>
+              <p className="text-sm font-bold text-slate-700">Est-ce que votre projet numérique vise à réduire l&apos;empreinte environnementale du numérique ?</p>
               <div className="flex gap-2">
                 {[true, false].map((val) => (
                   <button key={`q1-${val}`} type="button" onClick={() => setQAnswers({...qAnswers, reduit_empreinte_it: val})}
@@ -131,7 +144,7 @@ export default function NewProjectPage() {
             </div>
 
             <div className="flex flex-col gap-3">
-              <p className="text-sm font-bold text-slate-700">Est-ce que votre projet numérique vise à réduire l'empreinte environnementale d'un secteur identifié ?</p>
+              <p className="text-sm font-bold text-slate-700">Est-ce que votre projet numérique vise à réduire l&apos;empreinte environnementale d&apos;un secteur identifié ?</p>
               <div className="flex gap-2">
                 {[true, false].map((val) => (
                   <button key={`q2-${val}`} type="button" onClick={() => setQAnswers({...qAnswers, aide_transition_metier: val})}

@@ -31,6 +31,8 @@ export default function ProjectSummaryPage() {
   const [editingCharters, setEditingCharters] = useState(false);
   const [charterNRSigned, setCharterNRSigned] = useState<boolean>(false);
   const [charterIASigned, setCharterIASigned] = useState<boolean>(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [creatorProfile, setCreatorProfile] = useState<any>(null);
 
   const parseTypeApproche = (typeApproche: string | null | undefined) => {
     if (!typeApproche) return { greenIT: null, itForGreen: null };
@@ -77,6 +79,21 @@ export default function ProjectSummaryPage() {
         // Initialiser les chartes signées
         setCharterNRSigned(projRes.data.charte_nr_signed ?? false);
         setCharterIASigned(projRes.data.charte_ia_signed ?? false);
+
+        // Récupérer le profil du créateur via project.user_id
+        if (projRes.data.user_id) {
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('first_name, last_name, address, role')
+            .eq('id', projRes.data.user_id)
+            .single();
+          if (profileError) {
+            console.error('Erreur récupération du profil créateur :', profileError.message);
+          }
+          if (profileData) {
+            setCreatorProfile(profileData);
+          }
+        }
       }
       if (respRes.data) setResponses(respRes.data);
       if (qRes.data) setQuestions(qRes.data);
@@ -199,16 +216,17 @@ export default function ProjectSummaryPage() {
       score,
       label:
         score === 0 ? 'Critique' :
-        score === 1 ? 'Fragile' :
+        score === 1 ? 'Très fragile' :
+        score === 2 ? 'Fragile' :
         score === 3 ? 'Robuste' :
-        score === 5 ? 'Souverain' :
+        score === 4 ? 'Souverain' :
         'Non évalué',
     };
   });
 
   const step4Filled = step4Items.filter((item) => item.score !== undefined);
   const step4Score = step4Filled.length > 0
-    ? `${(step4Filled.reduce((sum, item) => sum + (item.score ?? 0), 0) / step4Filled.length).toFixed(1)}/5`
+    ? `${(step4Filled.reduce((sum, item) => sum + (item.score ?? 0), 0) / step4Filled.length).toFixed(1)}/4`
     : 'N/A';
 
   // Étape 3 : Impact Carbone & Collab & ACV
@@ -384,15 +402,57 @@ export default function ProjectSummaryPage() {
         <div className={`lg:col-span-12 space-y-8`}>
           <section className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
             <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 mb-8">Fiche d&apos;identité</h2>
-            <div className="space-y-6">
+            <div className="grid gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <InfoBlock label="Nature du projet" value={project.project_type || project.type_projet || project.nature_projet || 'N/A'} />
+                <InfoBlock label="Domaine applicatif" value={project.domaine || 'N/A'} />
+              </div>
+
+              {role === 'user_accompagnateur' && (
+                <InfoBlock label="Créateur du projet" value={getCreatorDisplayName(creatorProfile)} />
+              )}
+
               <InfoBlock label="Description" value={project.description} />
-              <div className="grid grid-cols-2 gap-4">
-                <InfoBlock label="Référent" value={project.referent_projet} subValue={project.referent_profil} />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <InfoBlock label="Objectifs principaux" value={project.main_objectifs || 'N/A'} />
+                <InfoBlock label="Objectif environnemental" value={project.environmental_objectifs || 'N/A'} />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <InfoBlock label="Cible" value={project.cible_service || 'N/A'} />
+                <InfoBlock label="Problématique" value={project.problematique || 'N/A'} />
+              </div>
+
+              <InfoBlock label="Livrables attendus" value={project.livrable || project.livrables_attendus || 'N/A'} />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <InfoBlock label="Référent" value={project.referent_projet || 'N/A'} subValue={project.referent_profil || undefined} />
                 <InfoBlock label="Budget" value={project.couts ? `${project.couts}€` : 'N/A'} />
               </div>
+
               {project.is_entreprise && (
                 <div className="pt-6 border-t border-slate-50">
-                  <InfoBlock label="Structure" value={project.nom_entreprise} subValue={`SIREN: ${project.siren}`} />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <InfoBlock label="Nom de la structure" value={project.nom_entreprise || 'N/A'} />
+                    <InfoBlock label="SIREN" value={project.siren || 'N/A'} />
+                    <InfoBlock label="Activité" value={project.activite || 'N/A'} />
+                    <InfoBlock label="Effectif" value={project.effectif ? `${project.effectif}` : 'N/A'} />
+                  </div>
+                </div>
+              )}
+
+              {project.audit_done !== undefined && (
+                <InfoBlock label="Audit accessibilité numérique" value={project.audit_done ? 'Oui' : 'Non'} />
+              )}
+
+              {project.audit_upload_url && (
+                <div>
+                  <p className="text-[10px] font-black uppercase text-slate-400 mb-1">Rapport d'audit</p>
+                  <p className="font-bold text-slate-800 leading-tight">Téléversé</p>
+                  <p className="text-xs text-slate-500 font-medium">
+                    <a href={project.audit_upload_url} target="_blank" rel="noreferrer" className="underline text-blue-600">Télécharger le rapport</a>
+                  </p>
                 </div>
               )}
             </div>
@@ -438,7 +498,18 @@ export default function ProjectSummaryPage() {
                   ))}
                 </div>
               </div>
+              <div className="flex justify-between items-start">
+                <div>
+                  <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 mb-2">Diagnostic détaillé</h2>
+                  <h3 className="text-3xl font-black uppercase italic tracking-tighter">Réponses étape 1</h3>
+                  <p className="text-sm text-slate-600">Consultez les réponses détaillées aux 100 questions du diagnostic.</p>
+                </div>
+                <Link href={`/dashboard/projects/${id}/step1-responses?projectId=${id}`} className="bg-blue-600 text-white px-6 py-3 rounded-2xl font-bold uppercase italic tracking-widest text-xs hover:bg-blue-700 transition-all">
+                  Voir les réponses →
+                </Link>
+              </div>
             </section>
+            
 
             {/* ÉTAPE 2 : RESSOURCES HUMAINES */}
             <section className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100">
@@ -484,15 +555,18 @@ export default function ProjectSummaryPage() {
             <div className="space-y-6">
               <div className="flex justify-between items-center">
                 <span className="text-xs font-bold uppercase opacity-60">Impact Carbone</span>
-                <span className="text-2xl font-black italic">{carbonImpact ?? 'N/A'} <small className="text-[10px] uppercase">kgCo2</small></span>
+                <span className="text-2xl font-black italic">{carbonImpact ?? 'N/A'} <small className="text-[10px] uppercase">kgCO₂</small></span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-xs font-bold uppercase opacity-60">Collaborateurs</span>
                 <span className="text-2xl font-black italic">{collaborators ?? 'N/A'}</span>
               </div>
-              {acvEntries.length > 0 && (
-                <div className="pt-6 border-t border-emerald-700/50">
-                  <p className="text-[10px] uppercase opacity-60 mb-4 font-bold">ACV ADEME</p>
+              <div className="pt-6 border-t border-emerald-700/50">
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-[10px] uppercase opacity-60 font-bold">ACV (MonACV)</p>
+                  <span className="text-xs uppercase opacity-70">{acvEntries.length > 0 ? 'Données saisies' : 'Aucune donnée MonACV renseignée'}</span>
+                </div>
+                {acvEntries.length > 0 ? (
                   <div className="space-y-3">
                     {acvEntries.map(([qid, val]) => (
                       <div key={qid} className="flex justify-between items-center">
@@ -501,6 +575,45 @@ export default function ProjectSummaryPage() {
                       </div>
                     ))}
                   </div>
+                ) : (
+                  <div className="rounded-3xl bg-emerald-800/60 p-4 text-slate-100 text-sm">
+                    Aucun indicateur MonACV n&apos;est encore renseigné pour ce projet.
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* ÉTAPE 04 : ACCESSIBILITÉ NUMÉRIQUE */}
+          <section className="bg-violet-900 text-violet-50 p-8 rounded-[2.5rem] shadow-xl">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-fuchsia-300 mb-2">Étape 04</h2>
+                <h3 className="text-3xl font-black uppercase italic tracking-tighter text-fuchsia-300">Accessibilité numérique</h3>
+              </div>
+              <div className="bg-violet-800 px-5 py-3 rounded-2xl">
+                <p className="text-[10px] uppercase opacity-70">Audit réalisé</p>
+                <p className="text-2xl font-black">{project.audit_done ? 'Oui' : 'Non'}</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-violet-200 mb-6">Suivi de l’audit d’accessibilité et téléchargement du rapport si le document a été envoyé.</p>
+
+            <div className="space-y-4">
+              <div className="rounded-3xl bg-violet-800/80 p-5 border border-violet-700">
+                <p className="text-xs uppercase opacity-70 mb-2">Statut de l’audit</p>
+                <p className="font-black text-white">{project.audit_done ? 'Audit réalisé' : 'Audit non réalisé'}</p>
+              </div>
+              {project.audit_upload_url ? (
+                <div className="rounded-3xl bg-violet-800/80 p-5 border border-violet-700">
+                  <p className="text-xs uppercase opacity-70 mb-2">Rapport envoyé</p>
+                  <a href={project.audit_upload_url} target="_blank" rel="noreferrer" className="font-black text-white underline underline-offset-4">
+                    Télécharger le rapport d’audit
+                  </a>
+                </div>
+              ) : (
+                <div className="rounded-3xl bg-violet-800/80 p-5 border border-violet-700 text-sm text-violet-200">
+                  Aucun rapport d’audit n’a encore été envoyé.
                 </div>
               )}
             </div>
@@ -510,7 +623,7 @@ export default function ProjectSummaryPage() {
           <section className="bg-slate-900 text-white p-8 rounded-[2.5rem] shadow-xl">
             <div className="flex justify-between items-start mb-6">
               <div>
-                <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300 mb-2">Étape 04</h2>
+                <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300 mb-2">Étape 05</h2>
                 <h3 className="text-2xl font-black uppercase italic tracking-tighter">Souveraineté & Robustesse</h3>
               </div>
               <div className="bg-slate-800 px-5 py-3 rounded-2xl">
@@ -535,13 +648,14 @@ export default function ProjectSummaryPage() {
           </section>
         </div>
 
-        {/* ACCOMPAGNATEUR SECTION - CHARTES */}
+        {/* ACCOMPAGNATEUR SECTION - CHARTES & DIAGNOSTIC */}
         {role === 'user_accompagnateur' && (
-          <div className="lg:col-span-12">
+          <div className="lg:col-span-12 space-y-8">
+            
             <section className="bg-emerald-50 p-8 rounded-[2.5rem] border-2 border-emerald-200 shadow-sm">
               <div className="flex justify-between items-start">
                 <div>
-                  <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600 mb-2">Étape 05</h2>
+                  <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600 mb-2">Étape 06</h2>
                   <h3 className="text-3xl font-black uppercase italic tracking-tighter">Chartes signées</h3>
                   <p className="text-sm text-slate-600">Validez les chartes signées.</p>
                 </div>
@@ -627,7 +741,7 @@ export default function ProjectSummaryPage() {
 }
 
 // Composants utilitaires locaux
-function InfoBlock({ label, value, subValue }: { label: string, value: string, subValue?: string }) {
+function InfoBlock({ label, value, subValue }: { label: string, value: string | number | null | undefined, subValue?: string }) {
   return (
     <div>
       <p className="text-[10px] font-black uppercase text-slate-400 mb-1">{label}</p>
@@ -636,3 +750,8 @@ function InfoBlock({ label, value, subValue }: { label: string, value: string, s
     </div>
   );
 }
+const getCreatorDisplayName = (profile: any) => {
+  if (!profile) return 'N/A';
+  const fullName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+  return fullName || profile.full_name || profile.username || profile.email || 'N/A';
+};

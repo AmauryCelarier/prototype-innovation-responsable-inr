@@ -163,8 +163,8 @@ export default function Etape5Souverainete() {
               {item.description}
             </p>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              {[0, 1, 3, 5].map((val) => (
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+              {[0, 1, 2, 3, 4].map((val) => (
                 <button
                   key={val}
                   onClick={() => setReponses({ ...reponses, [item.id]: val })}
@@ -176,7 +176,7 @@ export default function Etape5Souverainete() {
                 >
                   <span className="text-3xl font-black">{val}</span>
                   <span className="text-[8px] font-black uppercase tracking-widest text-center leading-none opacity-70">
-                    {val === 0 ? 'Critique' : val === 1 ? 'Fragile' : val === 3 ? 'Robuste' : 'Souverain'}
+                    {val === 0 ? 'Critique' : val === 1 ? 'Très fragile' : val === 2 ? 'Fragile' : val === 3 ? 'Robuste' : 'Souverain'}
                   </span>
                 </button>
               ))}

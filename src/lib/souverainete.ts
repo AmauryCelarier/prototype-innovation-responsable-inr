@@ -7,8 +7,9 @@ export const SOUVERAINETE_REF = [
     recommandations: {
       0: 'Non-conforme ou non-évalué.',
       1: 'Mise en conformité RGPD de base effectuée.',
+      2: 'Conformité RGPD établie avec quelques lacunes mineures en NIS2/DORA.',
       3: 'Analyse d\'impact effectuée pour NIS2 / DORA.',
-      5: 'Conformité totale et auditée régulièrement.'
+      4: 'Conformité totale et auditée régulièrement.'
     }
   },
   {
@@ -19,8 +20,9 @@ export const SOUVERAINETE_REF = [
     recommandations: {
       0: 'Hébergement hors UE sans garantie de protection.',
       1: 'Hébergement mixte ou en cours de migration vers l\'UE.',
+      2: 'Hébergement principalement en UE avec quelques données non critiques hors UE.',
       3: 'Hébergement 100% UE (France ou Europe).',
-      5: 'Hébergement certifié SecNumCloud ou équivalent souverain.'
+      4: 'Hébergement certifié SecNumCloud ou équivalent souverain.'
     }
   },
   {
@@ -31,8 +33,9 @@ export const SOUVERAINETE_REF = [
     recommandations: {
       0: 'Dépendance totale à des solutions extra-européennes.',
       1: 'Quelques solutions locales pour des services non-critiques.',
+      2: 'Environ 50% de fournisseurs européens pour les services clés.',
       3: 'Majorité de fournisseurs européens pour les services clés.',
-      5: 'Indépendance stratégique : alternatives locales identifiées et prêtes.'
+      4: 'Indépendance stratégique : alternatives locales identifiées et prêtes.'
     }
   },
   {
@@ -43,8 +46,9 @@ export const SOUVERAINETE_REF = [
     recommandations: {
       0: 'Aucune clause de sortie prévue.',
       1: 'Clauses existantes mais complexes ou coûteuses.',
+      2: 'Clauses de réversibilité basiques présentes avec quelques imprécisions.',
       3: 'Réversibilité contractuelle claire et documentée.',
-      5: 'Tests de réversibilité effectués et validés avec succès.'
+      4: 'Tests de réversibilité effectués et validés avec succès.'
     }
   },
   {
@@ -55,8 +59,9 @@ export const SOUVERAINETE_REF = [
     recommandations: {
       0: 'Format propriétaire fermé (impossible de migrer).',
       1: 'Usage minoritaire de standards ouverts.',
+      2: 'Quelques composants basés sur des standards ouverts, majorité propriétaires.',
       3: 'Architecture basée sur des APIs ouvertes et formats standards.',
-      5: 'Logiciels Libres / Open Source favorisés systématiquement.'
+      4: 'Logiciels Libres / Open Source favorisés systématiquement.'
     }
   },
   {
@@ -67,8 +72,9 @@ export const SOUVERAINETE_REF = [
     recommandations: {
       0: 'Aucune cartographie des données.',
       1: 'Inventaire partiel des données stockées.',
+      2: 'Cartographie partiellement effectuée avec protections de base.',
       3: 'Cartographie complète et mesures de protection adaptées.',
-      5: 'Gouvernance des données active (Chiffrement, cloisonnement).'
+      4: 'Gouvernance des données active (Chiffrement, cloisonnement).'
     }
   }
 ];
