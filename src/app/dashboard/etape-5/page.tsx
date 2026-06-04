@@ -133,68 +133,74 @@ export default function Etape5Souverainete() {
       <div className="max-w-4xl mx-auto px-6 mt-12 space-y-10">
         <div className="bg-blue-900 text-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
           <div className="relative z-10">
-            <h2 className="text-2xl font-black uppercase italic mb-2 tracking-tight text-white">Scoring de Souveraineté Numérique</h2>
-            <p className="text-blue-200 text-sm font-medium leading-relaxed max-w-xl">
+            <h2 className="text-2xl font-black uppercase italic mb-4 tracking-tight text-white">Scoring de Souveraineté Numérique</h2>
+            <p className="text-blue-200 text-sm font-medium leading-relaxed max-w-xl mb-4">
               L'Indice de Résilience Numérique (IRN), développé par l'aDRI - Association for Digital Resilience Initiative), vous permet de :
             </p>
-            <p className="text-blue-200 text-sm font-medium leading-relaxed max-w-xl">
-              Piloter le système d'information critique comme un actif stratégique
-            </p>
-            <p className="text-blue-200 text-sm font-medium leading-relaxed max-w-xl">
-              Structurer le dialogue entre directions (IT, risques, achats, conformité, stratégie)
-            </p>
-            <p className="text-blue-200 text-sm font-medium leading-relaxed max-w-xl">
-              Communiquer de manière objective sur la robustesse numérique auprès des partenaires, investisseurs et parties prenantes .
-            </p>
+            <ul className="text-blue-200 text-sm font-medium leading-relaxed max-w-xl space-y-2">
+              <li className="flex gap-3">
+                <span className="text-blue-300 font-bold min-w-fit">•</span>
+                <span>Piloter le système d'information critique comme un actif stratégique</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="text-blue-300 font-bold min-w-fit">•</span>
+                <span>Structurer le dialogue entre directions (IT, risques, achats, conformité, stratégie)</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="text-blue-300 font-bold min-w-fit">•</span>
+                <span>Communiquer de manière objective sur la robustesse numérique auprès des partenaires, investisseurs et parties prenantes</span>
+              </li>
+            </ul>
           </div>
           <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-blue-800 rounded-full opacity-50 blur-3xl"></div>
         </div>
 
-        {SOUVERAINETE_REF.map((item) => (
-          <div key={item.id} className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100 relative group transition-all hover:shadow-md">
-            <div className="flex items-center gap-4 mb-4">
-              <div>
-                <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">{item.titre}</h3>
-                <p className="text-blue-600 text-[10px] font-black uppercase tracking-[0.2em]">{item.question}</p>
-              </div>
-            </div>
+        
 
-            <p className="text-slate-500 text-sm mb-8 font-medium leading-relaxed">
-              {item.description}
+        {/* GRILLE D'EVALUATION */}
+        <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100">
+          <div className="mb-8">
+            <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight mb-4">Grille d'Évaluation IRN</h3>
+            <p className="text-slate-600 text-sm font-medium leading-relaxed mb-4">
+              La grille d'évaluation vous permettant d'obtenir votre score IRN est disponible ici :
             </p>
-
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-              {[0, 1, 2, 3, 4].map((val) => (
-                <button
-                  key={val}
-                  onClick={() => setReponses({ ...reponses, [item.id]: val })}
-                  className={`p-5 rounded-3xl border-2 transition-all flex flex-col items-center gap-2 ${
-                    reponses[item.id] === val
-                      ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-lg scale-105'
-                      : 'border-slate-50 bg-slate-50 text-slate-400 hover:border-slate-200'
-                  }`}
-                >
-                  <span className="text-3xl font-black">{val}</span>
-                  <span className="text-[8px] font-black uppercase tracking-widest text-center leading-none opacity-70">
-                    {val === 0 ? 'Critique' : val === 1 ? 'Très fragile' : val === 2 ? 'Fragile' : val === 3 ? 'Robuste' : 'Souverain'}
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            {reponses[item.id] !== undefined && (
-              <div className="bg-slate-900 text-white p-6 rounded-[2rem] border-l-8 border-blue-500">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-[10px] font-bold text-white">!</div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-blue-400">Impact & Recommandation</p>
-                </div>
-                <p className="text-sm font-bold leading-relaxed text-slate-100">
-                  {item.recommandations[reponses[item.id] as keyof typeof item.recommandations]}
-                </p>
-              </div>
-            )}
+            <a
+              href="https://gitlab.com/digitalresilienceinitiative/adri-irn"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-[1.5rem] transition-all shadow-lg shadow-blue-100"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+              Consulter la grille
+            </a>
           </div>
-        ))}
+
+          <div className="border-t pt-8">
+            <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight mb-6">Votre Score</h3>
+            <div className="bg-gradient-to-br from-slate-50 to-blue-50 p-6 rounded-[2rem] border border-slate-100">
+              <label className="block text-sm font-bold text-slate-700 mb-3 uppercase tracking-widest">
+                Score IRN (0 - 100)
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                placeholder="Entrez votre score..."
+                value={reponses['irn_score'] || ''}
+                onChange={(e) => {
+                  const val = e.target.value === '' ? undefined : Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
+                  setReponses({ ...reponses, 'irn_score': val });
+                }}
+                className="w-full px-6 py-4 border-2 border-slate-200 rounded-[1.5rem] focus:outline-none focus:border-blue-600 focus:bg-white transition-all text-lg font-bold text-slate-800 placeholder-slate-400"
+              />
+              <p className="text-[10px] font-medium text-slate-500 mt-3 uppercase tracking-widest">
+                Valeur comprise entre 0 et 100
+              </p>
+            </div>
+          </div>
+        </div>
 
         {/* ACTIONS FIXES */}
         <div className="sticky bottom-8 z-40 px-4">

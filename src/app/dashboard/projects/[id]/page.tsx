@@ -619,31 +619,43 @@ export default function ProjectSummaryPage() {
             </div>
           </section>
 
-          {/* ÉTAPE 4 : SOUVERAINETÉ & ROBUSTESSE */}
+          {/* ÉTAPE 5 : SOUVERAINETÉ & ROBUSTESSE (Indice de Résilience Numérique) */}
           <section className="bg-slate-900 text-white p-8 rounded-[2.5rem] shadow-xl">
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300 mb-2">Étape 05</h2>
                 <h3 className="text-2xl font-black uppercase italic tracking-tighter">Souveraineté & Robustesse</h3>
               </div>
-              <div className="bg-slate-800 px-5 py-3 rounded-2xl">
-                <p className="text-[10px] uppercase opacity-70">Score moyen</p>
-                <p className="text-2xl font-black">{step4Score}</p>
+              <div className="bg-slate-800 px-5 py-3 rounded-2xl border border-slate-700 text-center min-w-[120px]">
+                <p className="text-[10px] uppercase opacity-70 tracking-wider">Score IRN</p>
+                <p className="text-2xl font-black text-cyan-300">
+                  {resilienceResponses['irn_score'] !== undefined ? `${resilienceResponses['irn_score']}/100` : 'N/A'}
+                </p>
               </div>
             </div>
-            <p className="text-sm text-slate-300 mb-6">État de votre indépendance technologique et de votre capacité à résister aux ruptures.</p>
-            <div className="grid grid-cols-1 gap-3">
-              {step4Items.map((item) => (
-                <div key={item.id} className="flex justify-between items-center p-4 rounded-3xl bg-slate-800/90 border border-slate-700">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{item.titre}</p>
-                    <p className="text-sm text-slate-100">{item.score !== undefined ? item.label : 'Non évalué'}</p>
-                  </div>
-                  <span className={`text-lg font-black ${item.score === undefined ? 'text-slate-500' : 'text-cyan-300'}`}>
-                    {item.score !== undefined ? item.score : '-'}
-                  </span>
-                </div>
-              ))}
+            
+            <p className="text-sm text-slate-300 mb-6">
+              Indice de Résilience Numérique (IRN) évalué d&apos;après le référentiel de l&apos;aDRI (Association for Digital Resilience Initiative).
+            </p>
+
+            <div className="p-5 rounded-3xl bg-slate-800/90 border border-slate-700">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs uppercase tracking-[0.2em] text-slate-400">Niveau de robustesse globale</span>
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-slate-700 text-slate-200">
+                  {resilienceResponses['irn_score'] === undefined ? 'Non évalué' :
+                  resilienceResponses['irn_score'] >= 80 ? 'Souverain / Excellent' :
+                  resilienceResponses['irn_score'] >= 50 ? 'Robuste' :
+                  resilienceResponses['irn_score'] >= 30 ? 'Fragile' : 'Critique'}
+                </span>
+              </div>
+              
+              {/* Barre de progression visuelle pour le score sur 100 */}
+              <div className="w-full bg-slate-700 h-3 rounded-full overflow-hidden mt-3">
+                <div 
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 h-full transition-all duration-500"
+                  style={{ width: `${resilienceResponses['irn_score'] ?? 0}%` }}
+                />
+              </div>
             </div>
           </section>
         </div>
