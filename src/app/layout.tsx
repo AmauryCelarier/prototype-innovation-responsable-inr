@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "InovNR",
+  title: "InnovNR",
   description: "Autodiagnostic app for responsible innovation in the public sector",
 };
 
