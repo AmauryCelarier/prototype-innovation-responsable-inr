@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { SOUVERAINETE_REF } from '@/lib/souverainete';
@@ -8,6 +8,7 @@ import { SOUVERAINETE_REF } from '@/lib/souverainete';
 
 export default function Etape5Souverainete() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const projectId = searchParams.get('projectId');
 
   const [reponses, setReponses] = useState<Record<string, number>>({});
@@ -16,6 +17,28 @@ export default function Etape5Souverainete() {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
+    async function checkAccess() {
+          const { data: { user } } = await supabase.auth.getUser();
+          
+          if (!user || !projectId) {
+            router.push('/dashboard/projects');
+            return;
+          }
+    
+          // Vérifier si le projet appartient bien à l'utilisateur
+          const { data: project, error } = await supabase
+            .from('projects')
+            .select('user_id')
+            .eq('id', projectId)
+            .single();
+    
+          if (error || !project || project.user_id !== user.id) {
+            console.error("Accès non autorisé");
+            router.push('/dashboard/projects');
+          }
+        }
+        checkAccess();
+
     async function fetchSavedScores() {
       if (!projectId) return;
       setLoading(true);
@@ -41,7 +64,7 @@ export default function Etape5Souverainete() {
       }
     }
     fetchSavedScores();
-  }, [projectId]);
+  }, [projectId, router]);
 
   const handleSave = async () => {
     if (!projectId) return;

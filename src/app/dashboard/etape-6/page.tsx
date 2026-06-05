@@ -1,10 +1,37 @@
 'use client';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { supabase } from '@/lib/supabase';
+import { useEffect } from 'react';
 
 export default function Etape6Page() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const projectId = searchParams.get('projectId');
+
+  useEffect(() => {
+    async function checkAccess() {
+          const { data: { user } } = await supabase.auth.getUser();
+          
+          if (!user || !projectId) {
+            router.push('/dashboard/projects');
+            return;
+          }
+    
+          // Vérifier si le projet appartient bien à l'utilisateur
+          const { data: project, error } = await supabase
+            .from('projects')
+            .select('user_id')
+            .eq('id', projectId)
+            .single();
+    
+          if (error || !project || project.user_id !== user.id) {
+            console.error("Accès non autorisé");
+            router.push('/dashboard/projects');
+          }
+        }
+        checkAccess();
+  }, [projectId, router]);
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">

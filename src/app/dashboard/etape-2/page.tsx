@@ -2,12 +2,13 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { calculateScores } from '@/hooks/useScoring';
 import Link from 'next/link';
 
 export default function Etape2Page() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const projectId = searchParams.get('projectId');
 
   const [stats, setStats] = useState<any>(null);
@@ -16,6 +17,27 @@ export default function Etape2Page() {
   const [completedTrainings, setCompletedTrainings] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
+    async function checkAccess() {
+          const { data: { user } } = await supabase.auth.getUser();
+          
+          if (!user || !projectId) {
+            router.push('/dashboard/projects');
+            return;
+          }
+    
+          // Vérifier si le projet appartient bien à l'utilisateur
+          const { data: project, error } = await supabase
+            .from('projects')
+            .select('user_id')
+            .eq('id', projectId)
+            .single();
+    
+          if (error || !project || project.user_id !== user.id) {
+            console.error("Accès non autorisé");
+            router.push('/dashboard/projects');
+          }
+        }
+
     async function fetchData() {
       if (!projectId) return;
 
@@ -49,8 +71,9 @@ export default function Etape2Page() {
 
       setLoading(false);
     }
+    checkAccess();
     fetchData();
-  }, [projectId]);
+  }, [projectId, router]);
 
   const handleToggleTraining = async (trainingId: string) => {
     const { data: { user } } = await supabase.auth.getUser();

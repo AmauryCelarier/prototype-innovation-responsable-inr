@@ -1,11 +1,12 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 
 export default function Etape4Souverainete() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const projectId = searchParams.get('projectId');
 
   const [auditDone, setAuditDone] = useState(false);
@@ -15,6 +16,27 @@ export default function Etape4Souverainete() {
   const [uploadedAuditUrl, setUploadedAuditUrl] = useState<string | null>(null);
 
   useEffect(() => {
+    async function checkAccess() {
+          const { data: { user } } = await supabase.auth.getUser();
+          
+          if (!user || !projectId) {
+            router.push('/dashboard/projects');
+            return;
+          }
+    
+          // Vérifier si le projet appartient bien à l'utilisateur
+          const { data: project, error } = await supabase
+            .from('projects')
+            .select('user_id')
+            .eq('id', projectId)
+            .single();
+    
+          if (error || !project || project.user_id !== user.id) {
+            console.error("Accès non autorisé");
+            router.push('/dashboard/projects');
+          }
+        }
+        checkAccess();
     async function loadAuditState() {
       if (!projectId) return;
       const { data, error } = await supabase
@@ -35,7 +57,7 @@ export default function Etape4Souverainete() {
     }
 
     loadAuditState();
-  }, [projectId]);
+  }, [projectId, router]);
 
   const persistAuditState = async (payload: { audit_done?: boolean; audit_upload_url?: string | null }) => {
     if (!projectId) return;

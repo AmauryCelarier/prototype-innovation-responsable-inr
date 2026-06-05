@@ -2,7 +2,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { calculateScores } from '@/hooks/useScoring';
 import DiagnosticRadar from '@/components/RadarChart';
 import Link from 'next/link';
@@ -10,15 +10,38 @@ import Link from 'next/link';
 export default function DiagnosticPage() {
   const [questions, setQuestions] = useState<any[]>([]);
   const [responses, setResponses] = useState<Record<number, string>>({});
+  const router = useRouter();
   const searchParams = useSearchParams();
   const projectId = searchParams.get('projectId');
 
   const { stats, progressPercent } = calculateScores(questions, responses);
 
   useEffect(() => {
+    async function checkAccess() {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user || !projectId) {
+        router.push('/dashboard/projects');
+        return;
+      }
+
+      // Vérifier si le projet appartient bien à l'utilisateur
+      const { data: project, error } = await supabase
+        .from('projects')
+        .select('user_id')
+        .eq('id', projectId)
+        .single();
+
+      if (error || !project || project.user_id !== user.id) {
+        console.error("Accès non autorisé");
+        router.push('/dashboard/projects');
+      }
+    }
+    checkAccess();
+
     fetchData();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [projectId, router]);
 
   async function fetchData() {
     const { data: qData } = await supabase.from('questions').select('*').order('numero');

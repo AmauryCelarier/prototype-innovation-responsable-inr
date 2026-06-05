@@ -1,15 +1,54 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useRouter } from 'next/navigation';
 
 export default function AdminUsersPage() {
-  const [profiles, setProfiles] = useState<Array<{ id: string; first_name?: string | null; last_name?: string | null; role?: string | null; email?: string | null }>>([]);
-  const [projects, setProjects] = useState<Array<{ id: string; nom_projet?: string; domaine?: string; accompagnateur_id?: string | null; [key: string]: unknown }>>([]);
+  const router = useRouter();
+  const [profiles, setProfiles] = useState<Array<{
+    id: string;
+    first_name?: string | null;
+    last_name?: string | null;
+    role?: string | null;
+    email?: string | null;
+  }>>([]);
+  const [projects, setProjects] = useState<Array<{
+    id: string;
+    nom_projet?: string;
+    domaine?: string;
+    accompagnateur_id?: string | null;
+    [key: string]: unknown;
+  }>>([]);
   const [searchEmail, setSearchEmail] = useState('');
   const [searchService, setSearchService] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [authorized, setAuthorized] = useState(false);
 
   useEffect(() => {
+    async function checkAdminAndLoad() {
+      // Double vérification côté client (le middleware fait déjà le travail côté serveur)
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.replace('/login');
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (profile?.role !== 'admin') {
+        // Pas admin → redirection silencieuse
+        router.replace('/dashboard');
+        return;
+      }
+
+      setAuthorized(true);
+      await loadData();
+    }
+
     async function loadData() {
       setLoading(true);
       const [usersRes, projectsRes] = await Promise.all([
@@ -26,14 +65,13 @@ export default function AdminUsersPage() {
 
       if (projectsRes.data) {
         setProjects(projectsRes.data);
-      } else if (projectsRes.error) {
-        console.error('Erreur projets:', projectsRes.error.message);
       }
 
       setLoading(false);
     }
-    loadData();
-  }, []);
+
+    checkAdminAndLoad();
+  }, [router]);
 
   const changeRole = async (id: string, newRole: string) => {
     const { error } = await supabase
@@ -52,27 +90,25 @@ export default function AdminUsersPage() {
       .update({ accompagnateur_id: accompagnateurId || null })
       .eq('id', projectId);
     if (error) {
-      alert('Erreur lors de l\'affectation : ' + error.message);
+      alert("Erreur lors de l'affectation : " + error.message);
       return;
     }
-    setProjects((prev) => prev.map((project) => project.id === projectId ? { ...project, accompagnateur_id: accompagnateurId || null } : project));
+    setProjects((prev) =>
+      prev.map((project) =>
+        project.id === projectId
+          ? { ...project, accompagnateur_id: accompagnateurId || null }
+          : project
+      )
+    );
   };
 
   const deleteProject = async (projectId: string) => {
-    if (!confirm('Supprimer ce Projet ? Cette action est irréversible.')) {
-      return;
-    }
-
-    const { error } = await supabase
-      .from('projects')
-      .delete()
-      .eq('id', projectId);
-
+    if (!confirm('Supprimer ce projet ? Cette action est irréversible.')) return;
+    const { error } = await supabase.from('projects').delete().eq('id', projectId);
     if (error) {
       alert('Erreur lors de la suppression : ' + error.message);
       return;
     }
-
     setProjects((prev) => prev.filter((project) => project.id !== projectId));
   };
 
@@ -82,12 +118,22 @@ export default function AdminUsersPage() {
   const filteredProjects = projects.filter((project) =>
     !searchService || (project.nom_projet?.toLowerCase().includes(searchService.toLowerCase()) ?? false)
   );
-
   const accompagnateurs = profiles.filter((p) => p.role === 'user_accompagnateur');
   const getAccompagnateurName = (id: string) => {
     const user = profiles.find((p) => p.id === id);
     return user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : 'Aucun';
   };
+
+  // Pendant la vérification
+  if (!authorized && loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-slate-400 font-bold animate-pulse">Vérification des droits...</p>
+      </div>
+    );
+  }
+
+  if (!authorized) return null;
 
   return (
     <div className="p-8 max-w-5xl mx-auto min-h-screen">
@@ -95,10 +141,13 @@ export default function AdminUsersPage() {
       {loading && <p>Chargement...</p>}
       {!loading && (
         <>
+          {/* SECTION UTILISATEURS */}
           <section className="space-y-4 mb-8">
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-semibold text-black mb-2">Rechercher un utilisateur par email</label>
+                <label className="block text-sm font-semibold text-black mb-2">
+                  Rechercher un utilisateur par email
+                </label>
                 <input
                   type="text"
                   value={searchEmail}
@@ -107,7 +156,6 @@ export default function AdminUsersPage() {
                   className="w-full p-3 border rounded-lg text-black"
                 />
               </div>
-              
             </div>
           </section>
 
@@ -119,11 +167,12 @@ export default function AdminUsersPage() {
               {filteredProfiles.map((p) => (
                 <div key={p.id} className="flex items-center justify-between bg-white p-4 rounded-xl border">
                   <div>
-                    <div className="font-bold text-black">{(p.first_name || '') + ' ' + (p.last_name || '')}</div>
+                    <div className="font-bold text-black">
+                      {(p.first_name || '') + ' ' + (p.last_name || '')}
+                    </div>
                     <div className="text-sm text-black">Email: {p.email || 'Non défini'}</div>
                     <div className="text-sm text-black">ID: {p.id}</div>
                   </div>
-
                   <div className="flex items-center gap-4">
                     <select
                       value={p.role || 'user_startup'}
@@ -132,6 +181,7 @@ export default function AdminUsersPage() {
                     >
                       <option value="user_startup">user_startup</option>
                       <option value="user_accompagnateur">user_accompagnateur</option>
+                      <option value="admin">admin</option>
                     </select>
                   </div>
                 </div>
@@ -139,11 +189,16 @@ export default function AdminUsersPage() {
             </div>
           </section>
 
+          {/* SECTION PROJETS */}
           <section>
-            <h2 className="text-2xl font-black mb-4 text-black">Affecter un projet à un accompagnateur</h2>
+            <h2 className="text-2xl font-black mb-4 text-black">
+              Affecter un projet à un accompagnateur
+            </h2>
             <div className="space-y-4 mb-4">
               <div>
-                <label className="block text-sm font-semibold text-black mb-2">Rechercher un projet par nom</label>
+                <label className="block text-sm font-semibold text-black mb-2">
+                  Rechercher un projet par nom
+                </label>
                 <input
                   type="text"
                   value={searchService}
@@ -158,13 +213,22 @@ export default function AdminUsersPage() {
                 <p className="text-sm text-black/70">Aucun projet trouvé.</p>
               )}
               {filteredProjects.map((project) => (
-                <div key={project.id} className="flex flex-col md:flex-row md:items-center md:justify-between bg-white p-4 rounded-xl border">
+                <div
+                  key={project.id}
+                  className="flex flex-col md:flex-row md:items-center md:justify-between bg-white p-4 rounded-xl border"
+                >
                   <div className="mb-3 md:mb-0">
-                    <div className="font-bold text-black">{project.nom_projet || 'Projet sans nom'}</div>
+                    <div className="font-bold text-black">
+                      {project.nom_projet || 'Projet sans nom'}
+                    </div>
                     <div className="text-sm text-black">{project.domaine || 'Domaine non défini'}</div>
-                    <div className="text-sm text-black">Assigné à : {project.accompagnateur_id ? getAccompagnateurName(project.accompagnateur_id) : 'Aucun'}</div>
+                    <div className="text-sm text-black">
+                      Assigné à :{' '}
+                      {project.accompagnateur_id
+                        ? getAccompagnateurName(project.accompagnateur_id)
+                        : 'Aucun'}
+                    </div>
                   </div>
-
                   <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
                     <select
                       value={project.accompagnateur_id || ''}
@@ -173,7 +237,10 @@ export default function AdminUsersPage() {
                     >
                       <option value="">-- Aucun accompagnateur --</option>
                       {accompagnateurs.map((acc) => (
-                        <option key={acc.id} value={acc.id}>{`${acc.first_name || 'Accompagnateur'} ${acc.last_name || ''}`.trim() || acc.email}</option>
+                        <option key={acc.id} value={acc.id}>
+                          {`${acc.first_name || 'Accompagnateur'} ${acc.last_name || ''}`.trim() ||
+                            acc.email}
+                        </option>
                       ))}
                     </select>
                     <button

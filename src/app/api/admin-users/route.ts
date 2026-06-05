@@ -1,49 +1,50 @@
-import { createClient } from '@supabase/supabase-js';
-import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server'
+import { createSupabaseServerClient, createSupabaseAdminClient } from '@/lib/supabase-server'
 
 export async function GET() {
-  try {
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      return NextResponse.json({ error: 'Missing SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_URL' }, { status: 500 });
-    }
+  const supabase = await createSupabaseServerClient()
 
-    const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY,
-      { auth: { persistSession: false } }
-    );
-
-    const { data, error: usersError } = await supabaseAdmin.auth.admin.listUsers();
-    if (usersError || !data) {
-      return NextResponse.json({ error: usersError?.message || 'Unable to list users' }, { status: 500 });
-    }
-
-    const authUsers = data.users ?? [];
-    type ProfileRow = { id: string; first_name: string | null; last_name: string | null; role: string | null };
-    const { data: profilesData, error: profilesError } = await supabaseAdmin
-      .from('profiles')
-      .select('id, first_name, last_name, role');
-
-    if (profilesError) {
-      return NextResponse.json({ error: profilesError.message }, { status: 500 });
-    }
-
-    const profiles = (profilesData ?? []) as ProfileRow[];
-    const merged = authUsers.map((user) => {
-      const profile = profiles.find((p) => p.id === user.id) ?? null;
-      return {
-        id: user.id,
-        email: user.email,
-        role: profile?.role ?? 'user_startup',
-        first_name: profile?.first_name || '',
-        last_name: profile?.last_name || '',
-        profileExists: Boolean(profile),
-      };
-    });
-
-    return NextResponse.json(merged);
-  } catch (err: any) {
-    console.error('API /admin-users error:', err);
-    return NextResponse.json({ error: err?.message || 'Internal server error' }, { status: 500 });
+  // 1. Vérifier que l'utilisateur est connecté
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (authError || !user) {
+    return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
   }
+
+  // 2. Vérifier que l'utilisateur est admin
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.role !== 'admin') {
+    return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
+  }
+
+  // 3. Utiliser le client admin pour lister les utilisateurs Supabase Auth
+  const adminClient = createSupabaseAdminClient()
+  const { data: { users }, error: usersError } = await adminClient.auth.admin.listUsers()
+
+  if (usersError) {
+    return NextResponse.json({ error: usersError.message }, { status: 500 })
+  }
+
+  // 4. Récupérer les profils
+  const { data: profiles } = await adminClient
+    .from('profiles')
+    .select('id, first_name, last_name, role')
+
+  // 5. Fusionner email (Auth) + profil (DB)
+  const merged = users.map((u) => {
+    const p = profiles?.find((p) => p.id === u.id)
+    return {
+      id: u.id,
+      email: u.email,
+      first_name: p?.first_name ?? null,
+      last_name: p?.last_name ?? null,
+      role: p?.role ?? 'user_startup',
+    }
+  })
+
+  return NextResponse.json(merged)
 }
