@@ -270,7 +270,7 @@ export default function ProjectSummaryPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div>
           <button onClick={() => router.back()} className="mb-4 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-all">
-            <span className="text-lg">←</span> Retour aux services
+            <span className="text-lg">←</span> Retour aux projets
           </button>
           <h1 className="text-5xl font-black uppercase italic tracking-tighter leading-none">
             {project.nom_projet}
@@ -295,8 +295,8 @@ export default function ProjectSummaryPage() {
             <section className="bg-blue-50 p-8 rounded-[2.5rem] border-2 border-blue-200 shadow-sm">
               <div className="flex justify-between items-start">
                 <div>
-                  <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 mb-4">Approche du service</h2>
-                  <p className="text-sm text-slate-600">En tant qu&lsquo;accompagnateur, vous pouvez modifier la catégorisation du service.</p>
+                  <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 mb-4">Approche du projet</h2>
+                  <p className="text-sm text-slate-600">En tant qu&lsquo;accompagnateur, vous pouvez modifier la catégorisation du projet.</p>
                 </div>
                 {!editingApproach && (
                   <button
@@ -311,7 +311,7 @@ export default function ProjectSummaryPage() {
               {editingApproach ? (
                 <div className="mt-6 space-y-4">
                   <div className="space-y-3">
-                    <p className="text-sm font-bold text-slate-700">Le service réduit l&lsquo;impact environnemental du numérique ?</p>
+                    <p className="text-sm font-bold text-slate-700">Le projet réduit l&lsquo;impact environnemental du numérique ?</p>
                     <div className="flex gap-2">
                       {[true, false, null].map((val) => (
                         <button
@@ -331,7 +331,7 @@ export default function ProjectSummaryPage() {
                   </div>
 
                   <div className="space-y-3">
-                    <p className="text-sm font-bold text-slate-700">Le service aide un autre secteur à réduire son impact ?</p>
+                    <p className="text-sm font-bold text-slate-700">Le projet aide un autre secteur à réduire son impact ?</p>
                     <div className="flex gap-2">
                       {[true, false, null].map((val) => (
                         <button

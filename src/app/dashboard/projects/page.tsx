@@ -108,7 +108,7 @@ export default function ProjectsPage() {
   }, []);
 
   const handleDelete = async (id: string, name: string) => {
-  if (confirm(`Êtes-vous sûr de vouloir supprimer le service "${name}" ? Cela supprimera aussi tous les diagnostics associés.`)) {
+  if (confirm(`Êtes-vous sûr de vouloir supprimer le projet "${name}" ? Cela supprimera aussi tous les diagnostics associés.`)) {
 
     const { error: respError } = await supabase
       .from('responses')
@@ -138,11 +138,11 @@ export default function ProjectsPage() {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-black text-slate-800 uppercase italic tracking-tighter">
-            {role === 'user_accompagnateur' ? 'Services accompagnés' : 'Mes Services'}
+            {role === 'user_accompagnateur' ? 'Projets accompagnés' : 'Mes Projets'}
           </h1>
           <p className="text-slate-500 text-sm">
             {role === 'user_accompagnateur'
-              ? 'Accédez aux fiches récapitulatives des services dont vous êtes responsable.'
+              ? 'Accédez aux fiches récapitulatives des projets dont vous êtes responsable.'
               : 'Gérez vos diagnostics et fiches récapitulatives'}
           </p>
         </div>
@@ -151,7 +151,7 @@ export default function ProjectsPage() {
             href="/dashboard/projects/new"
             className="bg-blue-600 text-white px-6 py-3 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-blue-700 transition-all shadow-lg hover:shadow-blue-200"
           >
-            + Nouveau Service
+            + Nouveau Projet
           </Link>
         )}
       </div>
@@ -168,7 +168,7 @@ export default function ProjectsPage() {
                     <button 
                       onClick={() => handleDelete(p.id, p.nom_projet)}
                       className="text-slate-300 hover:text-red-500 transition-colors"
-                      title="Supprimer le service"
+                      title="Supprimer le projet"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
