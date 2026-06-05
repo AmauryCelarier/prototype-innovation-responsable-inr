@@ -41,25 +41,16 @@ export default function AuthPage() {
     if (authError) return alert(authError.message);
 
     if (authData.user) {
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert([{
-          id: authData.user.id,
-          first_name: firstName,
-          last_name: lastName,
-          address: address,
-          // ← email retiré : cette colonne n'existe pas dans profiles
-          // L'email est géré par Supabase Auth (auth.users), pas profiles
-          role: 'user_startup',
-        }]);
+      // Le trigger a déjà créé le profil avec id + role='user_startup'
+      // On met juste à jour les infos personnelles
+      await supabase.from('profiles').update({
+        first_name: firstName,
+        last_name: lastName,
+        address: address,
+      }).eq('id', authData.user.id);
 
-      if (profileError) {
-        console.error('Erreur profil:', profileError.message);
-        alert("Compte créé, mais erreur lors de l'enregistrement du profil.");
-      } else {
-        alert('Inscription réussie !');
-        setIsLogin(true);
-      }
+      alert('Inscription réussie !');
+      setIsLogin(true);
     }
   };
 
