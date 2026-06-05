@@ -23,27 +23,19 @@ export default function AdminUsersPage() {
   const [searchService, setSearchService] = useState('');
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(false);
+  const [adminEmail, setAdminEmail] = useState<string | null>(null);
 
   useEffect(() => {
     async function checkAdminAndLoad() {
-      // Double vérification côté client (le middleware fait déjà le travail côté serveur)
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.replace('/login');
-        return;
-      }
+      if (!user) { router.replace('/login'); return; }
+
+      setAdminEmail(user.email ?? null);
 
       const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
+        .from('profiles').select('role').eq('id', user.id).single();
 
-      if (profile?.role !== 'admin') {
-        // Pas admin → redirection silencieuse
-        router.replace('/dashboard');
-        return;
-      }
+      if (profile?.role !== 'admin') { router.replace('/dashboard'); return; }
 
       setAuthorized(true);
       await loadData();
@@ -55,76 +47,59 @@ export default function AdminUsersPage() {
         fetch('/api/admin-users'),
         supabase.from('projects').select('*'),
       ]);
-
       const usersData = await usersRes.json();
-      if (usersRes.ok) {
-        setProfiles(usersData);
-      } else {
-        console.error('Erreur admin-users:', usersData.error);
-      }
-
-      if (projectsRes.data) {
-        setProjects(projectsRes.data);
-      }
-
+      if (usersRes.ok) setProfiles(usersData);
+      if (projectsRes.data) setProjects(projectsRes.data);
       setLoading(false);
     }
 
     checkAdminAndLoad();
   }, [router]);
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.replace('/login');
+  };
+
   const changeRole = async (id: string, newRole: string) => {
-    const { error } = await supabase
-      .from('profiles')
-      .upsert({ id, role: newRole }, { onConflict: 'id' });
-    if (error) {
-      alert('Erreur lors de la mise à jour : ' + error.message);
-      return;
-    }
+    const res = await fetch('/api/admin-update-role', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: id, newRole }),
+    });
+    const data = await res.json();
+    if (!res.ok) { alert('Erreur lors de la mise à jour : ' + data.error); return; }
     setProfiles((prev) => prev.map(p => p.id === id ? { ...p, role: newRole } : p));
   };
 
   const assignAccompagnateur = async (projectId: string, accompagnateurId: string) => {
-    const { error } = await supabase
-      .from('projects')
-      .update({ accompagnateur_id: accompagnateurId || null })
-      .eq('id', projectId);
-    if (error) {
-      alert("Erreur lors de l'affectation : " + error.message);
-      return;
-    }
-    setProjects((prev) =>
-      prev.map((project) =>
-        project.id === projectId
-          ? { ...project, accompagnateur_id: accompagnateurId || null }
-          : project
-      )
-    );
+    const { error } = await supabase.from('projects')
+      .update({ accompagnateur_id: accompagnateurId || null }).eq('id', projectId);
+    if (error) { alert("Erreur lors de l'affectation : " + error.message); return; }
+    setProjects((prev) => prev.map((p) =>
+      p.id === projectId ? { ...p, accompagnateur_id: accompagnateurId || null } : p
+    ));
   };
 
   const deleteProject = async (projectId: string) => {
     if (!confirm('Supprimer ce projet ? Cette action est irréversible.')) return;
     const { error } = await supabase.from('projects').delete().eq('id', projectId);
-    if (error) {
-      alert('Erreur lors de la suppression : ' + error.message);
-      return;
-    }
-    setProjects((prev) => prev.filter((project) => project.id !== projectId));
+    if (error) { alert('Erreur lors de la suppression : ' + error.message); return; }
+    setProjects((prev) => prev.filter((p) => p.id !== projectId));
   };
 
   const filteredProfiles = profiles.filter((p) =>
     !searchEmail || (p.email?.toLowerCase().includes(searchEmail.toLowerCase()) ?? false)
   );
-  const filteredProjects = projects.filter((project) =>
-    !searchService || (project.nom_projet?.toLowerCase().includes(searchService.toLowerCase()) ?? false)
+  const filteredProjects = projects.filter((p) =>
+    !searchService || (p.nom_projet?.toLowerCase().includes(searchService.toLowerCase()) ?? false)
   );
   const accompagnateurs = profiles.filter((p) => p.role === 'user_accompagnateur');
   const getAccompagnateurName = (id: string) => {
-    const user = profiles.find((p) => p.id === id);
-    return user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : 'Aucun';
+    const u = profiles.find((p) => p.id === id);
+    return u ? `${u.first_name || ''} ${u.last_name || ''}`.trim() : 'Aucun';
   };
 
-  // Pendant la vérification
   if (!authorized && loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -132,131 +107,137 @@ export default function AdminUsersPage() {
       </div>
     );
   }
-
   if (!authorized) return null;
 
   return (
-    <div className="p-8 max-w-5xl mx-auto min-h-screen">
-      <h1 className="text-3xl font-black mb-6 text-black">Administration — Utilisateurs</h1>
-      {loading && <p>Chargement...</p>}
-      {!loading && (
-        <>
-          {/* SECTION UTILISATEURS */}
-          <section className="space-y-4 mb-8">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="block text-sm font-semibold text-black mb-2">
-                  Rechercher un utilisateur par email
-                </label>
-                <input
-                  type="text"
-                  value={searchEmail}
-                  onChange={(e) => setSearchEmail(e.target.value)}
-                  placeholder="Email de l'utilisateur"
-                  className="w-full p-3 border rounded-lg text-black"
-                />
-              </div>
-            </div>
-          </section>
+    <div className="min-h-screen bg-[#F8FAFC]">
 
-          <section className="space-y-4 mb-12">
-            <div className="max-h-[520px] overflow-y-auto space-y-4 p-3 bg-slate-50 rounded-3xl border border-slate-200">
-              {filteredProfiles.length === 0 && (
-                <p className="text-sm text-black/70">Aucun utilisateur trouvé.</p>
-              )}
-              {filteredProfiles.map((p) => (
-                <div key={p.id} className="flex items-center justify-between bg-white p-4 rounded-xl border">
-                  <div>
-                    <div className="font-bold text-black">
-                      {(p.first_name || '') + ' ' + (p.last_name || '')}
-                    </div>
-                    <div className="text-sm text-black">Email: {p.email || 'Non défini'}</div>
-                    <div className="text-sm text-black">ID: {p.id}</div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <select
-                      value={p.role || 'user_startup'}
-                      onChange={(e) => changeRole(p.id, e.target.value)}
-                      className="p-2 border rounded text-black"
-                    >
-                      <option value="user_startup">user_startup</option>
-                      <option value="user_accompagnateur">user_accompagnateur</option>
-                      <option value="admin">admin</option>
-                    </select>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
+      {/* ── BARRE ADMIN ─────────────────────────────────────────────────────── */}
+      <div className="fixed top-0 left-0 right-0 z-50 h-12 bg-white border-b border-slate-100 flex items-center justify-between px-6">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-red-500" />
+          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Admin</span>
+          {adminEmail && (
+            <span className="text-[10px] text-slate-400 font-medium ml-2">{adminEmail}</span>
+          )}
+        </div>
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-red-500 transition-colors px-3 py-1.5 rounded-lg hover:bg-red-50"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5}
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          Déconnexion
+        </button>
+      </div>
 
-          {/* SECTION PROJETS */}
-          <section>
-            <h2 className="text-2xl font-black mb-4 text-black">
-              Affecter un projet à un accompagnateur
-            </h2>
-            <div className="space-y-4 mb-4">
-              <div>
-                <label className="block text-sm font-semibold text-black mb-2">
-                  Rechercher un projet par nom
-                </label>
-                <input
-                  type="text"
-                  value={searchService}
-                  onChange={(e) => setSearchService(e.target.value)}
-                  placeholder="Nom du projet"
-                  className="w-full p-3 border rounded-lg text-black"
-                />
-              </div>
-            </div>
-            <div className="max-h-[520px] overflow-y-auto space-y-4 p-3 bg-slate-50 rounded-3xl border border-slate-200">
-              {filteredProjects.length === 0 && (
-                <p className="text-sm text-black/70">Aucun projet trouvé.</p>
-              )}
-              {filteredProjects.map((project) => (
-                <div
-                  key={project.id}
-                  className="flex flex-col md:flex-row md:items-center md:justify-between bg-white p-4 rounded-xl border"
-                >
-                  <div className="mb-3 md:mb-0">
-                    <div className="font-bold text-black">
-                      {project.nom_projet || 'Projet sans nom'}
-                    </div>
-                    <div className="text-sm text-black">{project.domaine || 'Domaine non défini'}</div>
-                    <div className="text-sm text-black">
-                      Assigné à :{' '}
-                      {project.accompagnateur_id
-                        ? getAccompagnateurName(project.accompagnateur_id)
-                        : 'Aucun'}
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
-                    <select
-                      value={project.accompagnateur_id || ''}
-                      onChange={(e) => assignAccompagnateur(project.id, e.target.value)}
-                      className="p-2 border rounded text-black"
-                    >
-                      <option value="">-- Aucun accompagnateur --</option>
-                      {accompagnateurs.map((acc) => (
-                        <option key={acc.id} value={acc.id}>
-                          {`${acc.first_name || 'Accompagnateur'} ${acc.last_name || ''}`.trim() ||
-                            acc.email}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      type="button"
-                      onClick={() => deleteProject(project.id)}
-                      className="inline-flex items-center justify-center rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-100"
-                    >
-                      Supprimer
-                    </button>
-                  </div>
+      {/* ── CONTENU ─────────────────────────────────────────────────────────── */}
+      <div className="pt-12">
+        <div className="p-8 max-w-5xl mx-auto">
+          <h1 className="text-3xl font-black mb-6 text-black">Administration — Utilisateurs</h1>
+
+          {loading && <p>Chargement...</p>}
+          {!loading && (
+            <>
+              {/* SECTION UTILISATEURS */}
+              <section className="space-y-4 mb-8">
+                <div>
+                  <label className="block text-sm font-semibold text-black mb-2">
+                    Rechercher un utilisateur par email
+                  </label>
+                  <input
+                    type="text"
+                    value={searchEmail}
+                    onChange={(e) => setSearchEmail(e.target.value)}
+                    placeholder="Email de l'utilisateur"
+                    className="w-full p-3 border rounded-lg text-black"
+                  />
                 </div>
-              ))}
-            </div>
-          </section>
-        </>
-      )}
+              </section>
+
+              <section className="space-y-4 mb-12">
+                <div className="max-h-[520px] overflow-y-auto space-y-4 p-3 bg-slate-50 rounded-3xl border border-slate-200">
+                  {filteredProfiles.length === 0 && (
+                    <p className="text-sm text-black/70">Aucun utilisateur trouvé.</p>
+                  )}
+                  {filteredProfiles.map((p) => (
+                    <div key={p.id} className="flex items-center justify-between bg-white p-4 rounded-xl border">
+                      <div>
+                        <div className="font-bold text-black">{(p.first_name || '') + ' ' + (p.last_name || '')}</div>
+                        <div className="text-sm text-black">Email: {p.email || 'Non défini'}</div>
+                        <div className="text-sm text-black">ID: {p.id}</div>
+                      </div>
+                      <select
+                        value={p.role || 'user_startup'}
+                        onChange={(e) => changeRole(p.id, e.target.value)}
+                        className="p-2 border rounded text-black"
+                      >
+                        <option value="user_startup">user_startup</option>
+                        <option value="user_accompagnateur">user_accompagnateur</option>
+                        <option value="admin">admin</option>
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              {/* SECTION PROJETS */}
+              <section>
+                <h2 className="text-2xl font-black mb-4 text-black">Affecter un projet à un accompagnateur</h2>
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-black mb-2">Rechercher un projet par nom</label>
+                  <input
+                    type="text"
+                    value={searchService}
+                    onChange={(e) => setSearchService(e.target.value)}
+                    placeholder="Nom du projet"
+                    className="w-full p-3 border rounded-lg text-black"
+                  />
+                </div>
+                <div className="max-h-[520px] overflow-y-auto space-y-4 p-3 bg-slate-50 rounded-3xl border border-slate-200">
+                  {filteredProjects.length === 0 && (
+                    <p className="text-sm text-black/70">Aucun projet trouvé.</p>
+                  )}
+                  {filteredProjects.map((project) => (
+                    <div key={project.id} className="flex flex-col md:flex-row md:items-center md:justify-between bg-white p-4 rounded-xl border">
+                      <div className="mb-3 md:mb-0">
+                        <div className="font-bold text-black">{project.nom_projet || 'Projet sans nom'}</div>
+                        <div className="text-sm text-black">{project.domaine || 'Domaine non défini'}</div>
+                        <div className="text-sm text-black">
+                          Assigné à : {project.accompagnateur_id ? getAccompagnateurName(project.accompagnateur_id) : 'Aucun'}
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
+                        <select
+                          value={project.accompagnateur_id || ''}
+                          onChange={(e) => assignAccompagnateur(project.id, e.target.value)}
+                          className="p-2 border rounded text-black"
+                        >
+                          <option value="">-- Aucun accompagnateur --</option>
+                          {accompagnateurs.map((acc) => (
+                            <option key={acc.id} value={acc.id}>
+                              {`${acc.first_name || ''} ${acc.last_name || ''}`.trim() || acc.email}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => deleteProject(project.id)}
+                          className="inline-flex items-center justify-center rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-100"
+                        >
+                          Supprimer
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
