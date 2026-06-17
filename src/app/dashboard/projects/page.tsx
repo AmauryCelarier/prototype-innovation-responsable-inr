@@ -163,7 +163,7 @@ export default function ProjectsPage() {
               {role !== 'user_accompagnateur' && (
                 // Lien vers étape-1 avec le public_id (UUID) au lieu de l'id bigint
                 <Link
-                  href={`/dashboard/etape-1?projectId=${p.public_id}`}
+                  href={`/dashboard/etape-1?projectId=${p.id}`}
                   className="block w-full text-center bg-slate-900 text-white p-4 rounded-2xl font-bold text-sm hover:bg-blue-600 transition-all"
                 >
                   Continuer le diagnostic
@@ -172,7 +172,7 @@ export default function ProjectsPage() {
 
               {/* Lien vers la fiche récapitulative avec le public_id (UUID) */}
               <Link
-                href={`/dashboard/projects/${p.public_id}`}
+                href={`/dashboard/projects/${p.id}`}
                 className={`block w-full text-center border-2 border-slate-100 text-slate-600 p-4 rounded-2xl font-bold text-sm hover:border-blue-600 hover:text-blue-600 transition-all ${
                   role === 'user_accompagnateur' ? 'bg-blue-50' : ''
                 }`}

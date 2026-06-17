@@ -61,6 +61,8 @@ export default function DiagnosticPage() {
         setResponses(map);
       }
     }
+
+    
   }
 
   const handleVote = async (questionId: number, score: string) => {

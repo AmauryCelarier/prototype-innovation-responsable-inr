@@ -74,11 +74,16 @@ export default function Etape5Souverainete() {
     // On prépare les données en s'assurant que l'ID projet est bien un nombre
     // et en ajoutant un timestamp de mise à jour
     const dataToSave = Object.entries(reponses).map(([critereId, scoreValue]) => ({
-      project_id: Number(projectId),
+      project_id: projectId,
       critere_id: critereId,
       score: scoreValue,
       updated_at: new Date().toISOString()
     }));
+
+    if (dataToSave.length === 0) {
+        setSaving(false);
+        return;
+      }
 
     try {
       // Upsert gère la mise à jour si la paire (project_id, critere_id) existe déjà
@@ -95,7 +100,9 @@ export default function Etape5Souverainete() {
     } 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     catch (err: any) {
-      console.error("Erreur sauvegarde:", err);
+      console.error("Détails complets de l'erreur (Texte):", err.message);
+      console.error("Détails complets de l'erreur (Code):", err.code);
+      console.dir(err);
       setMessage(`Erreur : ${err.message || 'Impossible de sauvegarder'}`);
     } finally {
       setSaving(false);

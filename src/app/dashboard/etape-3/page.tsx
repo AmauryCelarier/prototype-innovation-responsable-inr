@@ -128,7 +128,7 @@ export default function Etape3Page() {
       const acvEntries = Object.entries(acvValues)
         .filter(([, val]) => val !== undefined && val !== '')
         .map(([qId, val]) => ({
-          project_id: parseInt(projectId),
+          project_id: projectId,
           step_id: 3,
           question_id: qId,
           category: 'ACV_ADEME',
@@ -140,8 +140,9 @@ export default function Etape3Page() {
         const { error: rError } = await supabase
           .from('responses')
           .upsert(acvEntries, {
-            onConflict: 'project_id,step_id,question_id'
+            onConflict: 'project_id,question_id' 
           });
+          
         if (rError) throw rError;
       }
 
@@ -149,7 +150,9 @@ export default function Etape3Page() {
       setTimeout(() => setMessage(''), 3000);
         
     } catch (error: any) {
-      console.error("Détails complets de l'erreur:", error);
+      console.error("Détails complets de l'erreur (Texte):", error.message);
+      console.error("Détails complets de l'erreur (Code):", error.code);
+      console.dir(error);
       setMessage(error.details || error.message || 'Erreur de base de données');
     } finally {
       setLoading(false);
