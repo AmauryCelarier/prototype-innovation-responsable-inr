@@ -212,14 +212,10 @@ export default function Etape3Page() {
               <p className="text-sm text-slate-600">Utilisez le calculateur WeNR Light pour évaluer l&apos;empreinte carbone du numérique de votre organisation.</p>
               <button onClick={() => window.open('https://www.wenrlight.org/', '_blank')} className="text-xs font-black uppercase text-blue-600 hover:underline">Ouvrir WeNR Light →</button>
             </div>
-            <div className="bg-slate-50 p-6 rounded-3xl grid grid-cols-2 gap-4">
+            <div className="bg-slate-50 p-6 rounded-3xl grid grid-cols-1 gap-4">
               <div>
-                <label className="text-[10px] font-black uppercase text-slate-400 block mb-1">kg CO2 eq / an</label>
+                <label className="text-[10px] font-black uppercase text-slate-400 block mb-1">kg CO2 eq / an / collaborateur</label>
                 <input type="number" value={carbonImpact} onChange={(e) => setCarbonImpact(e.target.value)} className="w-full p-3 rounded-xl border-none shadow-inner font-bold" placeholder="0" />
-              </div>
-              <div>
-                <label className="text-[10px] font-black uppercase text-slate-400 block mb-1">Collaborateurs</label>
-                <input type="number" value={collaborators} onChange={(e) => setCollaborators(e.target.value)} className="w-full p-3 rounded-xl border-none shadow-inner font-bold" placeholder="0" />
               </div>
             </div>
           </div>

@@ -555,11 +555,7 @@ export default function ProjectSummaryPage() {
             <div className="space-y-6">
               <div className="flex justify-between items-center">
                 <span className="text-xs font-bold uppercase opacity-60">Impact Carbone</span>
-                <span className="text-2xl font-black italic">{carbonImpact ?? 'N/A'} <small className="text-[10px] uppercase">kgCO₂</small></span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-xs font-bold uppercase opacity-60">Collaborateurs</span>
-                <span className="text-2xl font-black italic">{collaborators ?? 'N/A'}</span>
+                <span className="text-2xl font-black italic">{carbonImpact ?? 'N/A'} <small className="text-[10px] uppercase">kgCO₂/collaborateur</small></span>
               </div>
               <div className="pt-6 border-t border-emerald-700/50">
                 <div className="flex items-center justify-between mb-4">
